@@ -28,9 +28,13 @@ export default function PortfolioInput({ quantity, setQuantity, avgPrice, setAvg
                     </Label>
                     <Input
                         id="quantity"
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => setQuantity(Number(e.target.value))}
+                        type="text"
+                        value={quantity.toLocaleString()}
+                        onChange={(e) => {
+                            const rawValue = e.target.value.replace(/,/g, '');
+                            const numericValue = rawValue ? parseInt(rawValue, 10) : 0;
+                            setQuantity(numericValue);
+                        }}
                         className="bg-slate-950 border-slate-800 focus:border-blue-500/50 focus:ring-blue-500/20 text-slate-200 font-mono text-lg text-right"
                     />
                 </div>
