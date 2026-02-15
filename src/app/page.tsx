@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import Image from 'next/image';
 import MyPortfolioCard from '@/components/MyPortfolioCard';
 import EtfSummaryCard from '@/components/EtfSummaryCard';
 import StockTable from '@/components/StockTable';
@@ -36,10 +37,20 @@ export default function Home() {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-900 pb-8">
         <div>
-          <h1 className="text-3xl font-black tracking-tighter flex items-center gap-3 italic">
-            <LayoutDashboard className="text-blue-500 fill-blue-500/20" size={36} />
-            KODEX 200 PRO
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12">
+              <Image
+                src="/images/logo_kodex.png"
+                alt="KODEX Logo"
+                fill
+                className="object-contain object-left"
+                priority
+              />
+            </div>
+            <h1 className="text-3xl font-black tracking-tighter italic text-slate-100">
+              KODEX200
+            </h1>
+          </div>
           <div className="flex items-center gap-3 mt-2">
             <Badge variant="outline" className={`flex items-center gap-1.5 py-1 px-3 border-slate-800 ${isMarketOpen ? 'text-green-400 bg-green-400/5' : 'text-slate-500 bg-slate-900'}`}>
               <span className={`w-2 h-2 rounded-full ${isMarketOpen ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`} />
@@ -135,15 +146,10 @@ export default function Home() {
         <StockTable stocks={data?.stocks || []} isLoading={isLoading} />
       </section>
 
-      <footer className="pt-20 pb-12 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-600 border-t border-slate-900/50">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
-          &copy; 2026 KODEX 200 HTS 플랫폼. 모든 데이터는 데모를 위해 시뮬레이션되었습니다.
+      <footer className="pt-20 pb-12 flex flex-col items-center gap-4 text-slate-600 border-t border-slate-900/50">
+        <p className="text-[12px] font-bold tracking-[0.1em]">
+          &copy; 2026 KODEX200 HTS CopyRight by Aufemir.
         </p>
-        <div className="flex items-center gap-6">
-          <a href="#" className="text-[10px] font-bold uppercase hover:text-slate-400 transition-colors">API 문서</a>
-          <a href="#" className="text-[10px] font-bold uppercase hover:text-slate-400 transition-colors">계좌 동기화</a>
-          <a href="#" className="text-[10px] font-bold uppercase hover:text-slate-400 transition-colors">고객 센터</a>
-        </div>
       </footer>
     </main>
   );
