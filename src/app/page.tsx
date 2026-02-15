@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import PortfolioInput from '@/components/PortfolioInput';
 import MarketIndices from '@/components/MarketIndices';
+import StockChart from '@/components/StockChart';
 
 export default function Home() {
   const [isLiveEnabled, setIsLiveEnabled] = useState(false);
@@ -131,6 +132,7 @@ export default function Home() {
             avgPrice={avgPrice}
             totalPrincipal={totalPrincipal}
           />
+          <StockChart symbol="069500" />
         </div>
 
         {/* Right Section: Market & Controls (Narrower) */}

@@ -36,5 +36,7 @@ export interface ApiResponse {
   marketIndices: {
     kospi: IndexData;
     kosdaq: IndexData;
+    kosdaq150?: IndexData;
+    usdKrw?: IndexData;
   };
 }
