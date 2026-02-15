@@ -147,8 +147,8 @@ export default function Home() {
       </section>
 
       <footer className="pt-20 pb-12 flex flex-col items-center gap-4 text-slate-600 border-t border-slate-900/50">
-        <p className="text-[12px] font-bold tracking-[0.1em]">
-          &copy; 2026 KODEX200 HTS CopyRight by Aufemir.
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em]">
+          &copy; 2026 KODEX200 HTS. All rights reserved by Aufemir.
         </p>
       </footer>
     </main>

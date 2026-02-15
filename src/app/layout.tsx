@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KODEX200 HTS",
+  title: "KODEX 200 HTS",
   description: "KODEX 200 ETF 및 구성 종목 실시간 모니터링 시스템",
 };
 
