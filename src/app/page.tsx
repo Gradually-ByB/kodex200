@@ -9,15 +9,31 @@ import StockTable from '@/components/StockTable';
 import { ApiResponse } from '@/types/stock';
 import { RefreshCw, LayoutDashboard, Activity, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import PortfolioInput from '@/components/PortfolioInput';
+import MarketIndices from '@/components/MarketIndices';
 
 export default function Home() {
   const [isLiveEnabled, setIsLiveEnabled] = useState(false);
   const [quantity, setQuantity] = useState(27);
   const [avgPrice, setAvgPrice] = useState(76573);
+  const [totalPrincipal, setTotalPrincipal] = useState(27 * 76573);
+  const [currentTime, setCurrentTime] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      setCurrentTime(`${hours}:${minutes}:${seconds} KST`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
     queryKey: ['quotes', isLiveEnabled],
@@ -35,7 +51,7 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8 space-y-8 max-w-7xl mx-auto selection:bg-blue-500/30">
       {/* Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-900 pb-8">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-900 pb-4">
         <div>
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-12">
@@ -65,7 +81,7 @@ export default function Home() {
         <div className="flex items-center gap-4 bg-slate-900/40 p-2 rounded-2xl border border-slate-800/50 backdrop-blur-md">
           <div className="px-4 hidden lg:block border-r border-slate-800">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">기준 시각</p>
-            <p className="text-sm font-mono text-blue-400 font-bold">15:30:00 KST</p>
+            <p className="text-sm font-mono text-blue-400 font-bold min-w-[90px]">{currentTime || '--:--:-- KST'}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -103,30 +119,42 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* Hero Section - ETF Summary */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 flex flex-col items-stretch gap-6">
+      {/* Hero Section - Balanced Terminal Layout (8:4 Split) */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Section: Main Data (Wider) */}
+        <div className="lg:col-span-8 flex flex-col gap-8">
           <EtfSummaryCard data={data?.etf} isLoading={isLoading} />
           <MyPortfolioCard
             currentPrice={data?.etf?.price}
             isLoading={isLoading}
             quantity={quantity}
             avgPrice={avgPrice}
+            totalPrincipal={totalPrincipal}
           />
         </div>
 
+        {/* Right Section: Market & Controls (Narrower) */}
         <div className="lg:col-span-4 flex flex-col gap-4">
-          <PortfolioInput
-            quantity={quantity}
-            setQuantity={setQuantity}
-            avgPrice={avgPrice}
-            setAvgPrice={setAvgPrice}
-          />
+          <MarketIndices data={data?.marketIndices} isLoading={isLoading} />
 
-          <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/30 flex items-center justify-between hover:bg-slate-900/50 transition-colors cursor-help">
-            <span className="text-xs text-slate-400">차트 동기화</span>
-            <div className="w-8 h-4 bg-green-500/20 rounded-full flex items-center px-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_5px_rgba(74,222,128,0.8)]" />
+          <div className="flex flex-col gap-4">
+            <PortfolioInput
+              quantity={quantity}
+              setQuantity={setQuantity}
+              avgPrice={avgPrice}
+              setAvgPrice={setAvgPrice}
+              totalPrincipal={totalPrincipal}
+              setTotalPrincipal={setTotalPrincipal}
+            />
+
+            <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/30 flex items-center justify-between hover:bg-slate-900/50 transition-colors cursor-help">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest leading-none">System Status</span>
+                <span className="text-[11px] text-slate-400 font-bold">차트 실시간 동기화</span>
+              </div>
+              <div className="w-8 h-4 bg-green-500/20 rounded-full flex items-center px-1">
+                <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+              </div>
             </div>
           </div>
         </div>
@@ -136,7 +164,7 @@ export default function Home() {
       <section className="space-y-6">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-3">
-            <h3 className="text-2xl font-black tracking-tight underline decoration-blue-500/40 decoration-4 underline-offset-8">구성 종목 현황</h3>
+            <h3 className="text-2xl tracking-tight underline decoration-blue-500/40 decoration-4 underline-offset-8">구성 종목 현황</h3>
             <span className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-400 uppercase tracking-tighter">
               <Activity size={10} />
               {isLiveEnabled ? '스트리밍' : '스냅샷'}

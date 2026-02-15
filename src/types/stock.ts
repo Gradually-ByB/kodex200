@@ -24,7 +24,17 @@ export interface EtfQuote {
   changeAmount: number;
 }
 
+export interface IndexData {
+  value: number;
+  change: number;
+  rate: number;
+}
+
 export interface ApiResponse {
   etf: EtfQuote;
   stocks: (Stock & Quote)[];
+  marketIndices: {
+    kospi: IndexData;
+    kosdaq: IndexData;
+  };
 }

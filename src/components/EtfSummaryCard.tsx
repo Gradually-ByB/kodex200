@@ -32,7 +32,7 @@ export default function EtfSummaryCard({ data, isLoading }: EtfSummaryCardProps)
                 <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
                     {isPositive ? <TrendingUp size={120} /> : isNegative ? <TrendingDown size={120} /> : <Minus size={120} />}
                 </div>
-                <CardContent className="p-6">
+                <CardContent className="px-6 py-0">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-slate-400 text-sm font-medium mb-1">KODEX 200</p>
@@ -48,7 +48,7 @@ export default function EtfSummaryCard({ data, isLoading }: EtfSummaryCardProps)
                         </div>
                     </div>
 
-                    <div className="mt-6 flex gap-6 text-sm">
+                    <div className="mt-4 flex gap-6 text-sm">
                         <div className="flex flex-col">
                             <span className="text-slate-500">시장 상태</span>
                             <span className="text-green-400 font-semibold flex items-center gap-1">
