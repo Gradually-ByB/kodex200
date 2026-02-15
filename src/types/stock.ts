@@ -1,0 +1,30 @@
+export interface Stock {
+  번호: number;
+  종목명: string;
+  ISIN: string;
+  종목코드: string;
+  수량: string | number;
+  "비중(%)": string;
+  "평가금액(원)": string;
+  "현재가(원)": string;
+  "등락(원)": string | number;
+}
+
+export interface Quote {
+  code: string;
+  price: number;
+  changeRate: number; // e.g., 0.52 for 0.52%
+  changeAmount: number;
+  volume: number;
+}
+
+export interface EtfQuote {
+  price: number;
+  changeRate: number;
+  changeAmount: number;
+}
+
+export interface ApiResponse {
+  etf: EtfQuote;
+  stocks: (Stock & Quote)[];
+}
