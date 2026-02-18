@@ -24,6 +24,14 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
+    const savedQuantity = localStorage.getItem('kodex200_quantity');
+    const savedAvgPrice = localStorage.getItem('kodex200_avgPrice');
+    const savedTotalPrincipal = localStorage.getItem('kodex200_totalPrincipal');
+
+    if (savedQuantity) setQuantity(Number(savedQuantity));
+    if (savedAvgPrice) setAvgPrice(Number(savedAvgPrice));
+    if (savedTotalPrincipal) setTotalPrincipal(Number(savedTotalPrincipal));
+
     const updateTime = () => {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -35,6 +43,18 @@ export default function Home() {
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('kodex200_quantity', quantity.toString());
+  }, [quantity]);
+
+  useEffect(() => {
+    localStorage.setItem('kodex200_avgPrice', avgPrice.toString());
+  }, [avgPrice]);
+
+  useEffect(() => {
+    localStorage.setItem('kodex200_totalPrincipal', totalPrincipal.toString());
+  }, [totalPrincipal]);
 
   const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
     queryKey: ['quotes', isLiveEnabled],
