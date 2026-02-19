@@ -32,6 +32,7 @@ export interface IndexData {
 
 export interface ApiResponse {
   etf: EtfQuote;
+  tiger: EtfQuote;
   stocks: (Stock & Quote)[];
   marketIndices: {
     kospi: IndexData;

@@ -8,9 +8,10 @@ import { motion } from 'framer-motion';
 interface EtfSummaryCardProps {
     data?: EtfQuote;
     isLoading: boolean;
+    title?: string;
 }
 
-export default function EtfSummaryCard({ data, isLoading }: EtfSummaryCardProps) {
+export default function EtfSummaryCard({ data, isLoading, title = 'KODEX 200' }: EtfSummaryCardProps) {
     if (isLoading || !data) {
         return (
             <Card className="bg-slate-900 border-slate-800 animate-pulse">
@@ -35,7 +36,7 @@ export default function EtfSummaryCard({ data, isLoading }: EtfSummaryCardProps)
                 <CardContent className="px-6 py-0">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-slate-400 text-sm font-medium mb-1">KODEX 200</p>
+                            <p className="text-slate-400 text-sm font-medium mb-1">{title}</p>
                             <h2 className="text-4xl font-bold tracking-tight">
                                 {data.price.toLocaleString()}
                                 <span className="text-slate-500 text-lg ml-2 font-normal">KRW</span>

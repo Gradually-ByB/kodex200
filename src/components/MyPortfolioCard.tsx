@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Wallet, PieChart, ArrowUpRight, ArrowDownRigh
 import { motion } from 'framer-motion';
 
 interface MyPortfolioCardProps {
+    subtitle?: string;
     currentPrice?: number;
     isLoading: boolean;
     quantity: number;
@@ -13,7 +14,7 @@ interface MyPortfolioCardProps {
     totalPrincipal: number;
 }
 
-export default function MyPortfolioCard({ currentPrice, isLoading, quantity, avgPrice, totalPrincipal }: MyPortfolioCardProps) {
+export default function MyPortfolioCard({ subtitle, currentPrice, isLoading, quantity, avgPrice, totalPrincipal }: MyPortfolioCardProps) {
     // Principal used for display inside the valuation section
     const purchaseAmount = avgPrice * quantity;
 
@@ -43,11 +44,14 @@ export default function MyPortfolioCard({ currentPrice, isLoading, quantity, avg
                     <Wallet size={130} />
                 </div>
 
-                <CardHeader className="py-1 px-4 border-b border-slate-800/50">
+                <CardHeader className="py-2 px-4 border-b border-slate-800/50">
                     <div className="flex justify-between items-center">
-                        <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-1">
+                        <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
                             <Wallet size={16} />
-                            내 보유 자산 현황
+                            <span>
+                                내 보유 자산 현황
+                                {subtitle && <span className="text-blue-500/80 ml-1.5 font-bold tracking-tight">({subtitle})</span>}
+                            </span>
                         </CardTitle>
                         <Badge variant="outline" className="border-slate-700 text-slate-400 font-normal">
                             보유 {quantity}주

@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Settings2 } from 'lucide-react';
 
 interface PortfolioInputProps {
+    subtitle?: string;
     quantity: number;
     setQuantity: (value: number) => void;
     avgPrice: number;
@@ -15,6 +16,7 @@ interface PortfolioInputProps {
 }
 
 export default function PortfolioInput({
+    subtitle,
     quantity,
     setQuantity,
     avgPrice,
@@ -24,11 +26,18 @@ export default function PortfolioInput({
 }: PortfolioInputProps) {
     return (
         <Card className="flex-1 bg-slate-900/50 border-slate-800 backdrop-blur-xl relative overflow-hidden">
-            <CardHeader className="py-1 px-4 border-b border-slate-800/50">
-                <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2 uppercase tracking-wide">
-                    <Settings2 size={16} />
-                    투자 정보 설정
-                </CardTitle>
+            <CardHeader className="py-2 px-4 border-b border-slate-800/50">
+                <div className="flex flex-col gap-0.5">
+                    <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2 uppercase tracking-wide">
+                        <Settings2 size={16} />
+                        투자 정보 설정
+                    </CardTitle>
+                    {subtitle && (
+                        <span className="text-[10px] font-bold text-blue-500/80 uppercase tracking-widest pl-6">
+                            {subtitle}
+                        </span>
+                    )}
+                </div>
             </CardHeader>
             <CardContent className="pt-2 p-4 space-y-1">
                 <div className="space-y-1">

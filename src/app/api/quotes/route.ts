@@ -34,9 +34,10 @@ export async function GET(request: Request) {
         const components = await loadKodexComponents();
         const stockCodes = components.map(s => s.종목코드);
 
-        // Ensure KODEX 200 ETF code is included for the main card
-        const etfCode = '069500';
-        const allCodesForPolling = Array.from(new Set([...stockCodes, etfCode]));
+        // Ensure KODEX 200 and TIGER 200 ETF codes are included for the main cards
+        const etfCode = '069500'; // KODEX 200
+        const tigerCode = '102110'; // TIGER 200
+        const allCodesForPolling = Array.from(new Set([...stockCodes, etfCode, tigerCode]));
 
         // 1. Fetch Indices
         const fetchIndices = axios.get('https://stock.naver.com/api/polling/domestic/index?itemCodes=KOSPI,KOSDAQ,KPI200,KOSDAQ150', { headers: NAVER_HEADERS })
@@ -139,11 +140,36 @@ export async function GET(request: Request) {
         if (isNaN(etfChangeAmount)) etfChangeAmount = 0;
         if (isNaN(etfChangeRate)) etfChangeRate = 0;
 
+        // ETF (TIGER 200) Specific Data
+        const tigerData = naverStockMap[tigerCode];
+        let tigerPrice = Number(tigerData?.closePriceRaw) || Math.round(kpi200ValueRaw * 100);
+        let tigerChangeAmount = Number(tigerData?.compareToPreviousClosePriceRaw) || 0;
+        let tigerChangeRate = Number(tigerData?.fluctuationsRatioRaw) || 0;
+
+        if (isLiveMode) {
+            if (!simulatedOffsets['TIGER200']) simulatedOffsets['TIGER200'] = 0;
+            simulatedOffsets['TIGER200'] += (Math.random() - 0.5) * 10;
+            const refPrice = Number(tigerData?.closePriceRaw) || tigerPrice;
+            tigerPrice = Math.round(tigerPrice + simulatedOffsets['TIGER200']);
+            const prevPrice = refPrice - tigerChangeAmount;
+            tigerChangeAmount = tigerPrice - prevPrice;
+            tigerChangeRate = prevPrice !== 0 ? (tigerChangeAmount / prevPrice) * 100 : tigerChangeRate;
+        }
+
+        if (isNaN(tigerPrice)) tigerPrice = 33000;
+        if (isNaN(tigerChangeAmount)) tigerChangeAmount = 0;
+        if (isNaN(tigerChangeRate)) tigerChangeRate = 0;
+
         return NextResponse.json({
             etf: {
                 price: etfPrice,
                 changeRate: parseFloat(Number(etfChangeRate).toFixed(2)),
                 changeAmount: etfChangeAmount,
+            },
+            tiger: {
+                price: tigerPrice,
+                changeRate: parseFloat(Number(tigerChangeRate).toFixed(2)),
+                changeAmount: tigerChangeAmount,
             },
             marketIndices: {
                 kospi: {

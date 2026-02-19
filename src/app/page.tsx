@@ -23,14 +23,28 @@ export default function Home() {
   const [totalPrincipal, setTotalPrincipal] = useState(27 * 76573);
   const [currentTime, setCurrentTime] = useState<string>('');
 
+  // TIGER 200 State
+  const [tigerQuantity, setTigerQuantity] = useState(0);
+  const [tigerAvgPrice, setTigerAvgPrice] = useState(0);
+  const [tigerTotalPrincipal, setTigerTotalPrincipal] = useState(0);
+
+
   useEffect(() => {
     const savedQuantity = localStorage.getItem('kodex200_quantity');
     const savedAvgPrice = localStorage.getItem('kodex200_avgPrice');
     const savedTotalPrincipal = localStorage.getItem('kodex200_totalPrincipal');
 
+    const savedTigerQuantity = localStorage.getItem('tiger200_quantity');
+    const savedTigerAvgPrice = localStorage.getItem('tiger200_avgPrice');
+    const savedTigerTotalPrincipal = localStorage.getItem('tiger200_totalPrincipal');
+
     if (savedQuantity) setQuantity(Number(savedQuantity));
     if (savedAvgPrice) setAvgPrice(Number(savedAvgPrice));
     if (savedTotalPrincipal) setTotalPrincipal(Number(savedTotalPrincipal));
+
+    if (savedTigerQuantity) setTigerQuantity(Number(savedTigerQuantity));
+    if (savedTigerAvgPrice) setTigerAvgPrice(Number(savedTigerAvgPrice));
+    if (savedTigerTotalPrincipal) setTigerTotalPrincipal(Number(savedTigerTotalPrincipal));
 
     const updateTime = () => {
       const now = new Date();
@@ -55,6 +69,18 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem('kodex200_totalPrincipal', totalPrincipal.toString());
   }, [totalPrincipal]);
+
+  useEffect(() => {
+    localStorage.setItem('tiger200_quantity', tigerQuantity.toString());
+  }, [tigerQuantity]);
+
+  useEffect(() => {
+    localStorage.setItem('tiger200_avgPrice', tigerAvgPrice.toString());
+  }, [tigerAvgPrice]);
+
+  useEffect(() => {
+    localStorage.setItem('tiger200_totalPrincipal', tigerTotalPrincipal.toString());
+  }, [tigerTotalPrincipal]);
 
   const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
     queryKey: ['quotes', isLiveEnabled],
@@ -144,13 +170,25 @@ export default function Home() {
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Section: Main Data (Wider) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-          <EtfSummaryCard data={data?.etf} isLoading={isLoading} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <EtfSummaryCard data={data?.etf} isLoading={isLoading} title="KODEX 200" />
+            <EtfSummaryCard data={data?.tiger} isLoading={isLoading} title="TIGER 200" />
+          </div>
           <MyPortfolioCard
+            subtitle="KODEX 200"
             currentPrice={data?.etf?.price}
             isLoading={isLoading}
             quantity={quantity}
             avgPrice={avgPrice}
             totalPrincipal={totalPrincipal}
+          />
+          <MyPortfolioCard
+            subtitle="TIGER 200"
+            currentPrice={data?.tiger?.price}
+            isLoading={isLoading}
+            quantity={tigerQuantity}
+            avgPrice={tigerAvgPrice}
+            totalPrincipal={tigerTotalPrincipal}
           />
           <StockChart symbol="069500" />
         </div>
@@ -161,6 +199,7 @@ export default function Home() {
 
           <div className="flex flex-col gap-4">
             <PortfolioInput
+              subtitle="KODEX 200"
               quantity={quantity}
               setQuantity={setQuantity}
               avgPrice={avgPrice}
@@ -169,15 +208,16 @@ export default function Home() {
               setTotalPrincipal={setTotalPrincipal}
             />
 
-            <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/30 flex items-center justify-between hover:bg-slate-900/50 transition-colors cursor-help">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest leading-none">System Status</span>
-                <span className="text-[11px] text-slate-400 font-bold">차트 실시간 동기화</span>
-              </div>
-              <div className="w-8 h-4 bg-green-500/20 rounded-full flex items-center px-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
-              </div>
-            </div>
+            <PortfolioInput
+              subtitle="TIGER 200"
+              quantity={tigerQuantity}
+              setQuantity={setTigerQuantity}
+              avgPrice={tigerAvgPrice}
+              setAvgPrice={setTigerAvgPrice}
+              totalPrincipal={tigerTotalPrincipal}
+              setTotalPrincipal={setTigerTotalPrincipal}
+            />
+
           </div>
         </div>
       </section>
