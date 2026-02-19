@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import Image from 'next/image';
 import MyPortfolioCard from '@/components/MyPortfolioCard';
@@ -17,7 +17,6 @@ import MarketIndices from '@/components/MarketIndices';
 import StockChart from '@/components/StockChart';
 
 export default function Home() {
-  const queryClient = useQueryClient();
   const [isLiveEnabled, setIsLiveEnabled] = useState(false);
   const [quantity, setQuantity] = useState(27);
   const [avgPrice, setAvgPrice] = useState(76573);
@@ -29,57 +28,40 @@ export default function Home() {
   const [tigerAvgPrice, setTigerAvgPrice] = useState(0);
   const [tigerTotalPrincipal, setTigerTotalPrincipal] = useState(0);
 
-  // Fetch Portfolio from DB
-  const { data: portfolioData, isLoading: isPortfolioLoading } = useQuery<Portfolio>({
-    queryKey: ['portfolio'],
-    queryFn: async () => {
-      const response = await axios.get('/api/portfolio');
-      return response.data;
-    },
-  });
-
-  // Update local states when portfolio data is fetched
-  useEffect(() => {
-    if (portfolioData) {
-      setQuantity(portfolioData.kodexQuantity ?? 27);
-      setAvgPrice(portfolioData.kodexAvgPrice ?? 76573);
-      setTotalPrincipal(portfolioData.kodexPrincipal ?? (27 * 76573));
-
-      setTigerQuantity(portfolioData.tigerQuantity ?? 0);
-      setTigerAvgPrice(portfolioData.tigerAvgPrice ?? 0);
-      setTigerTotalPrincipal(portfolioData.tigerPrincipal ?? 0);
-    }
-  }, [portfolioData]);
-
-  // Mutation to save portfolio
-  const saveMutation = useMutation({
-    mutationFn: async (newData: any) => {
-      const response = await axios.post('/api/portfolio', newData);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
-    },
-  });
-
-  // Debounced save function
+  // Debounced save function for localStorage
   const debouncedSave = useCallback(
     (() => {
       let timeout: NodeJS.Timeout;
       return (data: any) => {
         clearTimeout(timeout);
         timeout = setTimeout(() => {
-          saveMutation.mutate(data);
+          localStorage.setItem('portfolio', JSON.stringify(data));
         }, 1000);
       };
     })(),
-    [saveMutation]
+    []
   );
 
-  // Auto-save when values change
+  // Load from localStorage on mount
   useEffect(() => {
-    if (isPortfolioLoading) return;
+    const saved = localStorage.getItem('portfolio');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setQuantity(data.kodexQuantity ?? 27);
+        setAvgPrice(data.kodexAvgPrice ?? 76573);
+        setTotalPrincipal(data.kodexPrincipal ?? (27 * 76573));
+        setTigerQuantity(data.tigerQuantity ?? 0);
+        setTigerAvgPrice(data.tigerAvgPrice ?? 0);
+        setTigerTotalPrincipal(data.tigerPrincipal ?? 0);
+      } catch (e) {
+        console.error('Failed to load portfolio from localStorage', e);
+      }
+    }
+  }, []);
 
+  // Auto-save to localStorage when values change
+  useEffect(() => {
     debouncedSave({
       kodexQuantity: quantity,
       kodexAvgPrice: avgPrice,
@@ -88,7 +70,7 @@ export default function Home() {
       tigerAvgPrice: tigerAvgPrice,
       tigerPrincipal: tigerTotalPrincipal,
     });
-  }, [quantity, avgPrice, totalPrincipal, tigerQuantity, tigerAvgPrice, tigerTotalPrincipal, isPortfolioLoading, debouncedSave]);
+  }, [quantity, avgPrice, totalPrincipal, tigerQuantity, tigerAvgPrice, tigerTotalPrincipal, debouncedSave]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -151,13 +133,8 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex flex-col items-end mr-2">
-              <span className="text-[8px] uppercase tracking-widest text-slate-500 font-bold">DB 상태</span>
-              <div className="flex items-center gap-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${saveMutation.isPending ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
-                <span className="text-[10px] text-slate-400 font-mono">{saveMutation.isPending ? '저장 중...' : '동기화됨'}</span>
-              </div>
-            </div>
+            {/* DB status removed as per user request */}
+
 
             <Button
               variant={isLiveEnabled ? "default" : "outline"}
@@ -204,7 +181,7 @@ export default function Home() {
           <MyPortfolioCard
             subtitle="KODEX 200"
             currentPrice={data?.etf?.price}
-            isLoading={isLoading || isPortfolioLoading}
+            isLoading={isLoading}
             quantity={quantity}
             avgPrice={avgPrice}
             totalPrincipal={totalPrincipal}
@@ -212,7 +189,7 @@ export default function Home() {
           <MyPortfolioCard
             subtitle="TIGER 200"
             currentPrice={data?.tiger?.price}
-            isLoading={isLoading || isPortfolioLoading}
+            isLoading={isLoading}
             quantity={tigerQuantity}
             avgPrice={tigerAvgPrice}
             totalPrincipal={tigerTotalPrincipal}
