@@ -1,15 +1,15 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import Image from 'next/image';
 import MyPortfolioCard from '@/components/MyPortfolioCard';
 import EtfSummaryCard from '@/components/EtfSummaryCard';
 import StockTable from '@/components/StockTable';
-import { ApiResponse } from '@/types/stock';
-import { RefreshCw, LayoutDashboard, Activity, AlertCircle } from 'lucide-react';
+import { ApiResponse, Portfolio } from '@/types/stock';
+import { RefreshCw, Activity, AlertCircle, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import PortfolioInput from '@/components/PortfolioInput';
@@ -17,6 +17,7 @@ import MarketIndices from '@/components/MarketIndices';
 import StockChart from '@/components/StockChart';
 
 export default function Home() {
+  const queryClient = useQueryClient();
   const [isLiveEnabled, setIsLiveEnabled] = useState(false);
   const [quantity, setQuantity] = useState(27);
   const [avgPrice, setAvgPrice] = useState(76573);
@@ -28,24 +29,68 @@ export default function Home() {
   const [tigerAvgPrice, setTigerAvgPrice] = useState(0);
   const [tigerTotalPrincipal, setTigerTotalPrincipal] = useState(0);
 
+  // Fetch Portfolio from DB
+  const { data: portfolioData, isLoading: isPortfolioLoading } = useQuery<Portfolio>({
+    queryKey: ['portfolio'],
+    queryFn: async () => {
+      const response = await axios.get('/api/portfolio');
+      return response.data;
+    },
+  });
+
+  // Update local states when portfolio data is fetched
+  useEffect(() => {
+    if (portfolioData) {
+      setQuantity(portfolioData.kodexQuantity ?? 27);
+      setAvgPrice(portfolioData.kodexAvgPrice ?? 76573);
+      setTotalPrincipal(portfolioData.kodexPrincipal ?? (27 * 76573));
+
+      setTigerQuantity(portfolioData.tigerQuantity ?? 0);
+      setTigerAvgPrice(portfolioData.tigerAvgPrice ?? 0);
+      setTigerTotalPrincipal(portfolioData.tigerPrincipal ?? 0);
+    }
+  }, [portfolioData]);
+
+  // Mutation to save portfolio
+  const saveMutation = useMutation({
+    mutationFn: async (newData: any) => {
+      const response = await axios.post('/api/portfolio', newData);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+    },
+  });
+
+  // Debounced save function
+  const debouncedSave = useCallback(
+    (() => {
+      let timeout: NodeJS.Timeout;
+      return (data: any) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          saveMutation.mutate(data);
+        }, 1000);
+      };
+    })(),
+    [saveMutation]
+  );
+
+  // Auto-save when values change
+  useEffect(() => {
+    if (isPortfolioLoading) return;
+
+    debouncedSave({
+      kodexQuantity: quantity,
+      kodexAvgPrice: avgPrice,
+      kodexPrincipal: totalPrincipal,
+      tigerQuantity: tigerQuantity,
+      tigerAvgPrice: tigerAvgPrice,
+      tigerPrincipal: tigerTotalPrincipal,
+    });
+  }, [quantity, avgPrice, totalPrincipal, tigerQuantity, tigerAvgPrice, tigerTotalPrincipal, isPortfolioLoading, debouncedSave]);
 
   useEffect(() => {
-    const savedQuantity = localStorage.getItem('kodex200_quantity');
-    const savedAvgPrice = localStorage.getItem('kodex200_avgPrice');
-    const savedTotalPrincipal = localStorage.getItem('kodex200_totalPrincipal');
-
-    const savedTigerQuantity = localStorage.getItem('tiger200_quantity');
-    const savedTigerAvgPrice = localStorage.getItem('tiger200_avgPrice');
-    const savedTigerTotalPrincipal = localStorage.getItem('tiger200_totalPrincipal');
-
-    if (savedQuantity) setQuantity(Number(savedQuantity));
-    if (savedAvgPrice) setAvgPrice(Number(savedAvgPrice));
-    if (savedTotalPrincipal) setTotalPrincipal(Number(savedTotalPrincipal));
-
-    if (savedTigerQuantity) setTigerQuantity(Number(savedTigerQuantity));
-    if (savedTigerAvgPrice) setTigerAvgPrice(Number(savedTigerAvgPrice));
-    if (savedTigerTotalPrincipal) setTigerTotalPrincipal(Number(savedTigerTotalPrincipal));
-
     const updateTime = () => {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -58,38 +103,12 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('kodex200_quantity', quantity.toString());
-  }, [quantity]);
-
-  useEffect(() => {
-    localStorage.setItem('kodex200_avgPrice', avgPrice.toString());
-  }, [avgPrice]);
-
-  useEffect(() => {
-    localStorage.setItem('kodex200_totalPrincipal', totalPrincipal.toString());
-  }, [totalPrincipal]);
-
-  useEffect(() => {
-    localStorage.setItem('tiger200_quantity', tigerQuantity.toString());
-  }, [tigerQuantity]);
-
-  useEffect(() => {
-    localStorage.setItem('tiger200_avgPrice', tigerAvgPrice.toString());
-  }, [tigerAvgPrice]);
-
-  useEffect(() => {
-    localStorage.setItem('tiger200_totalPrincipal', tigerTotalPrincipal.toString());
-  }, [tigerTotalPrincipal]);
-
   const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
     queryKey: ['quotes', isLiveEnabled],
     queryFn: async () => {
       const response = await axios.get(`/api/quotes${isLiveEnabled ? '?live=true' : ''}`);
       return response.data;
     },
-    // When live is enabled, poll every 2 seconds for that "real-time" feel
-    // Outside live mode, poll every 30 seconds as per original PRD
     refetchInterval: isLiveEnabled ? 2000 : 30000,
   });
 
@@ -132,6 +151,14 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end mr-2">
+              <span className="text-[8px] uppercase tracking-widest text-slate-500 font-bold">DB 상태</span>
+              <div className="flex items-center gap-1">
+                <div className={`w-1.5 h-1.5 rounded-full ${saveMutation.isPending ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`} />
+                <span className="text-[10px] text-slate-400 font-mono">{saveMutation.isPending ? '저장 중...' : '동기화됨'}</span>
+              </div>
+            </div>
+
             <Button
               variant={isLiveEnabled ? "default" : "outline"}
               size="sm"
@@ -177,7 +204,7 @@ export default function Home() {
           <MyPortfolioCard
             subtitle="KODEX 200"
             currentPrice={data?.etf?.price}
-            isLoading={isLoading}
+            isLoading={isLoading || isPortfolioLoading}
             quantity={quantity}
             avgPrice={avgPrice}
             totalPrincipal={totalPrincipal}
@@ -185,7 +212,7 @@ export default function Home() {
           <MyPortfolioCard
             subtitle="TIGER 200"
             currentPrice={data?.tiger?.price}
-            isLoading={isLoading}
+            isLoading={isLoading || isPortfolioLoading}
             quantity={tigerQuantity}
             avgPrice={tigerAvgPrice}
             totalPrincipal={tigerTotalPrincipal}

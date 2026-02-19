@@ -41,3 +41,13 @@ export interface ApiResponse {
     usdKrw?: IndexData;
   };
 }
+export interface Portfolio {
+  id: string;
+  kodexQuantity: number;
+  kodexAvgPrice: number;
+  kodexPrincipal: number;
+  tigerQuantity: number;
+  tigerAvgPrice: number;
+  tigerPrincipal: number;
+  updatedAt: string;
+}
