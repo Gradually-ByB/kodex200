@@ -44,19 +44,34 @@ const PriceCell = ({ price, prevPrice }: { price: number; prevPrice: number | un
     );
 };
 
+// New component for volume cell
+const VolumeCell = ({ volume, prevVolume }: { volume: number; prevVolume: number | undefined }) => {
+    const [flash, setFlash] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (prevVolume !== undefined && volume > prevVolume) {
+            setFlash(true);
+            const timer = setTimeout(() => setFlash(false), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [volume, prevVolume]);
+
+    return (
+        <TableCell className={`text-right text-sm font-mono transition-colors duration-500 ${flash ? 'bg-amber-500/20 text-amber-400 font-bold' : 'text-slate-400 group-hover:text-slate-200'
+            }`}>
+            {volume.toLocaleString()}
+        </TableCell>
+    );
+};
+
 export default function StockTable({ stocks, isLoading }: StockTableProps) {
     const [search, setSearch] = useState('');
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'changeRate', direction: 'desc' });
-    const prevStocksRef = useRef<Record<string, number>>({});
+    const prevStocksRef = useRef<Record<string, { price: number; volume: number }>>({});
 
     useEffect(() => {
         if (stocks.length > 0) {
-            const currentPrices: Record<string, number> = {};
-            stocks.forEach(s => {
-                currentPrices[s.종목코드] = s.price;
-            });
             // We don't update ref here immediately because we want to compare with PREVIOUS state
-            // Actually, we'll update it *after* children render or in a way that respects the cycle
         }
     }, [stocks]);
 
@@ -84,15 +99,15 @@ export default function StockTable({ stocks, isLoading }: StockTableProps) {
             return 0;
         });
 
-    // Keep track of prices for flash effect
-    const stockPriceMap = stocks.reduce((acc, s) => {
-        acc[s.종목코드] = s.price;
+    // Keep track of prices and volumes for flash effect
+    const stockMap = stocks.reduce((acc, s) => {
+        acc[s.종목코드] = { price: s.price, volume: s.volume };
         return acc;
-    }, {} as Record<string, number>);
+    }, {} as Record<string, { price: number; volume: number }>);
 
     useEffect(() => {
         return () => {
-            prevStocksRef.current = stockPriceMap;
+            prevStocksRef.current = stockMap;
         };
     }, [stocks]);
 
@@ -157,16 +172,14 @@ export default function StockTable({ stocks, isLoading }: StockTableProps) {
                                         >
                                             <TableCell className="font-mono text-[10px] text-slate-500 group-hover:text-slate-300">{stock.종목코드}</TableCell>
                                             <TableCell className="font-bold text-slate-200">{stock.종목명}</TableCell>
-                                            <PriceCell price={stock.price} prevPrice={prevStocksRef.current[stock.종목코드]} />
+                                            <PriceCell price={stock.price} prevPrice={prevStocksRef.current[stock.종목코드]?.price} />
                                             <TableCell className="text-right">
                                                 <div className={`inline-flex items-center font-mono font-bold ${stock.changeRate > 0 ? 'text-red-400' : stock.changeRate < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
                                                     {stock.changeRate > 0 ? '▲' : stock.changeRate < 0 ? '▼' : ''}
                                                     {Math.abs(stock.changeRate).toFixed(2)}%
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right text-slate-400 text-sm font-mono group-hover:text-slate-200 transition-colors">
-                                                {stock.volume.toLocaleString()}
-                                            </TableCell>
+                                            <VolumeCell volume={stock.volume} prevVolume={prevStocksRef.current[stock.종목코드]?.volume} />
                                             <TableCell className="text-right">
                                                 <Badge variant="outline" className="bg-slate-900 border-slate-800 text-slate-500 font-mono text-[10px] group-hover:border-slate-700 transition-colors">
                                                     {stock["비중(%)"]}

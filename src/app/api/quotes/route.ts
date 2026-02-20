@@ -19,6 +19,7 @@ function parseChange(val: string | number): number {
 
 // Global state to store simulated fluctuations during the session
 let simulatedOffsets: Record<string, number> = {};
+let simulatedVolumes: Record<string, number> = {};
 
 const NAVER_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -87,28 +88,37 @@ export async function GET(request: Request) {
             let price = Number(naverData?.closePriceRaw) || parsePrice(stock["현재가(원)"]);
             let changeAmount = Number(naverData?.compareToPreviousClosePriceRaw) || parseChange(stock["등락(원)"]);
             let changeRate = Number(naverData?.fluctuationsRatioRaw) || 0;
+            let volume = Number(naverData?.accumulatedTradingVolumeRaw) || Math.floor(Math.random() * 500000);
 
             if (isLiveMode) {
                 if (!simulatedOffsets[stock.종목코드]) simulatedOffsets[stock.종목코드] = 0;
+                if (!simulatedVolumes[stock.종목코드]) simulatedVolumes[stock.종목코드] = volume;
+
                 const move = (Math.random() - 0.5) * 0.0005 * price;
                 simulatedOffsets[stock.종목코드] += move;
                 price = Math.round(price + simulatedOffsets[stock.종목코드]);
                 const prevPrice = (Number(naverData?.closePriceRaw) || price) - (Number(naverData?.compareToPreviousClosePriceRaw) || changeAmount);
                 changeAmount = price - prevPrice;
                 changeRate = prevPrice !== 0 ? (changeAmount / prevPrice) * 100 : changeRate;
+
+                // Simulate volume increase
+                const volumeIncrease = Math.floor(Math.random() * 500); // 0 to 499 shares added
+                simulatedVolumes[stock.종목코드] += volumeIncrease;
+                volume = simulatedVolumes[stock.종목코드];
             }
 
             // Ensure we don't have NaN
             if (isNaN(price)) price = 0;
             if (isNaN(changeAmount)) changeAmount = 0;
             if (isNaN(changeRate)) changeRate = 0;
+            if (isNaN(volume)) volume = 0;
 
             return {
                 code: stock.종목코드,
                 price,
                 changeAmount,
                 changeRate: parseFloat(Number(changeRate).toFixed(2)),
-                volume: Number(naverData?.accumulatedTradingVolumeRaw) || Math.floor(Math.random() * 500000),
+                volume: volume,
             } as Quote;
         });
 

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import MyPortfolioCard from '@/components/MyPortfolioCard';
 import EtfSummaryCard from '@/components/EtfSummaryCard';
 import StockTable from '@/components/StockTable';
-import { ApiResponse, Portfolio } from '@/types/stock';
+import { ApiResponse } from '@/types/stock';
 import { RefreshCw, Activity, AlertCircle, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useCallback } from 'react';
@@ -126,16 +126,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-slate-900/40 p-2 rounded-2xl border border-slate-800/50 backdrop-blur-md">
+        <div className="flex items-center gap-4 bg-slate-950/40 p-2 rounded-2xl border border-slate-800/50 backdrop-blur-md">
           <div className="px-4 hidden lg:block border-r border-slate-800">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">기준 시각</p>
             <p className="text-sm font-mono text-blue-400 font-bold min-w-[90px]">{currentTime || '--:--:-- KST'}</p>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* DB status removed as per user request */}
-
-
             <Button
               variant={isLiveEnabled ? "default" : "outline"}
               size="sm"

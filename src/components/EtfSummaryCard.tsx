@@ -53,13 +53,9 @@ export default function EtfSummaryCard({ data, isLoading, title = 'KODEX 200' }:
                         <div className="flex flex-col">
                             <span className="text-slate-500">시장 상태</span>
                             <span className="text-green-400 font-semibold flex items-center gap-1">
-                                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                                 운영 중
                             </span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-slate-500">거래량</span>
-                            <span className="text-slate-200 font-semibold">1,245,678</span>
                         </div>
                     </div>
                 </CardContent>
