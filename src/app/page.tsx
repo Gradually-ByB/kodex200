@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import Image from 'next/image';
 import MyPortfolioCard from '@/components/MyPortfolioCard';
+import TotalPortfolioCard from '@/components/TotalPortfolioCard';
 import EtfSummaryCard from '@/components/EtfSummaryCard';
-import StockTable from '@/components/StockTable';
 import { ApiResponse } from '@/types/stock';
 import { RefreshCw, Activity, AlertCircle, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import PortfolioInput from '@/components/PortfolioInput';
 import MarketIndices from '@/components/MarketIndices';
-import StockChart from '@/components/StockChart';
 
 export default function Home() {
   const [isLiveEnabled, setIsLiveEnabled] = useState(false);
@@ -22,6 +21,7 @@ export default function Home() {
   const [avgPrice, setAvgPrice] = useState(76573);
   const [totalPrincipal, setTotalPrincipal] = useState(27 * 76573);
   const [currentTime, setCurrentTime] = useState<string>('');
+  const [currentDate, setCurrentDate] = useState<string>('');
 
   // TIGER 200 State
   const [tigerQuantity, setTigerQuantity] = useState(0);
@@ -78,6 +78,13 @@ export default function Home() {
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      const dayOfWeek = dayNames[now.getDay()];
+
+      setCurrentDate(`${year}-${month}-${day} (${dayOfWeek}요일)`);
       setCurrentTime(`${hours}:${minutes}:${seconds} KST`);
     };
     updateTime();
@@ -121,7 +128,7 @@ export default function Home() {
               시장 {isMarketOpen ? '개장' : '마감'}
             </Badge>
             <p className="text-slate-500 text-sm font-medium">
-              데이터: 2026-02-13 아카이브 {isLiveEnabled && '+ 실시간 시뮬레이션'}
+              날짜: {currentDate || '----.--.--'} {isLiveEnabled && '+ 실시간 시뮬레이션'}
             </p>
           </div>
         </div>
@@ -168,7 +175,7 @@ export default function Home() {
       )}
 
       {/* Hero Section - Balanced Terminal Layout (8:4 Split) */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* Left Section: Main Data (Wider) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -191,7 +198,12 @@ export default function Home() {
             avgPrice={tigerAvgPrice}
             totalPrincipal={tigerTotalPrincipal}
           />
-          <StockChart symbol="069500" />
+          <TotalPortfolioCard
+            className="flex-1"
+            totalValuation={(data?.etf?.price ? data.etf.price * quantity : 0) + (data?.tiger?.price ? data.tiger.price * tigerQuantity : 0)}
+            totalPrincipal={totalPrincipal + tigerTotalPrincipal}
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Right Section: Market & Controls (Narrower) */}
@@ -223,22 +235,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Stock Table */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-3">
-            <h3 className="text-2xl tracking-tight underline decoration-blue-500/40 decoration-4 underline-offset-8">구성 종목 현황</h3>
-            <span className="mt-2 flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/10 text-blue-400 uppercase tracking-tighter">
-              <Activity size={10} />
-              {isLiveEnabled ? '스트리밍' : '스냅샷'}
-            </span>
-          </div>
-        </div>
-        <StockTable stocks={data?.stocks || []} isLoading={isLoading} />
-      </section>
-
-      <footer className="pt-20 pb-12 flex flex-col items-center gap-4 text-slate-600 border-t border-slate-900/50">
-        <p className="text-[10px] font-bold uppercase tracking-[0.1em]">
+      <footer className="pt-20 pb-1 flex flex-col items-center gap-2 text-slate-600 border-t border-slate-900/50">
+        <p className="text-[14px] font-bold">
           &copy; 2026 KODEX200 HTS. All rights reserved by Aufemir.
         </p>
       </footer>
