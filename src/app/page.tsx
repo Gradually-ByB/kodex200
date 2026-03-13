@@ -3,103 +3,167 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import Image from 'next/image';
-import MyPortfolioCard from '@/components/MyPortfolioCard';
-import TotalPortfolioCard from '@/components/TotalPortfolioCard';
-import EtfSummaryCard from '@/components/EtfSummaryCard';
 import { ApiResponse } from '@/types/stock';
-import { RefreshCw, Activity, AlertCircle, Save } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import PortfolioInput from '@/components/PortfolioInput';
 import MarketIndices from '@/components/MarketIndices';
+import EtfSummaryCard from '@/components/EtfSummaryCard';
+import TotalPortfolioCard from '@/components/TotalPortfolioCard';
+import DailyProfitCard from '@/components/DailyProfitCard';
+import PortfolioInput from '@/components/PortfolioInput';
+import PortfolioHistoryTable from '@/components/PortfolioHistoryTable';
+import { useCallback } from 'react';
 
 export default function Home() {
-  const [isLiveEnabled, setIsLiveEnabled] = useState(false);
   const [quantity, setQuantity] = useState(27);
   const [avgPrice, setAvgPrice] = useState(76573);
   const [totalPrincipal, setTotalPrincipal] = useState(27 * 76573);
-  const [currentTime, setCurrentTime] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<string>('');
+  const [history, setHistory] = useState<any[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // TIGER 200 State
-  const [tigerQuantity, setTigerQuantity] = useState(0);
-  const [tigerAvgPrice, setTigerAvgPrice] = useState(0);
-  const [tigerTotalPrincipal, setTigerTotalPrincipal] = useState(0);
-
-  // Debounced save function for localStorage
-  const debouncedSave = useCallback(
-    (() => {
-      let timeout: NodeJS.Timeout;
-      return (data: any) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          localStorage.setItem('portfolio', JSON.stringify(data));
-        }, 1000);
-      };
-    })(),
-    []
-  );
-
-  // Load from localStorage on mount
+  // Fetch initial data from DB
   useEffect(() => {
-    const saved = localStorage.getItem('portfolio');
-    if (saved) {
+    const fetchPortfolio = async () => {
       try {
-        const data = JSON.parse(saved);
-        setQuantity(data.kodexQuantity ?? 27);
-        setAvgPrice(data.kodexAvgPrice ?? 76573);
-        setTotalPrincipal(data.kodexPrincipal ?? (27 * 76573));
-        setTigerQuantity(data.tigerQuantity ?? 0);
-        setTigerAvgPrice(data.tigerAvgPrice ?? 0);
-        setTigerTotalPrincipal(data.tigerPrincipal ?? 0);
-      } catch (e) {
-        console.error('Failed to load portfolio from localStorage', e);
+        const response = await axios.get('/api/portfolio');
+        if (response.data.portfolio) {
+          const { quantity, avgPrice, totalPrincipal } = response.data.portfolio;
+          setQuantity(quantity);
+          setAvgPrice(avgPrice);
+          setTotalPrincipal(totalPrincipal);
+        }
+        if (response.data.history) {
+          setHistory(response.data.history);
+        }
+        setIsLoaded(true);
+      } catch (error) {
+        console.error('Failed to fetch from DB:', error);
+        setIsLoaded(true); // Still set to true to allow editing if DB is empty or fails
       }
-    }
+    };
+    fetchPortfolio();
   }, []);
 
-  // Auto-save to localStorage when values change
-  useEffect(() => {
-    debouncedSave({
-      kodexQuantity: quantity,
-      kodexAvgPrice: avgPrice,
-      kodexPrincipal: totalPrincipal,
-      tigerQuantity: tigerQuantity,
-      tigerAvgPrice: tigerAvgPrice,
-      tigerPrincipal: tigerTotalPrincipal,
-    });
-  }, [quantity, avgPrice, totalPrincipal, tigerQuantity, tigerAvgPrice, tigerTotalPrincipal, debouncedSave]);
+  const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
+    queryKey: ['quotes'],
+    queryFn: async () => {
+      const response = await axios.get('/api/quotes');
+      return response.data;
+    },
+    refetchInterval: 60000,
+  });
 
+  // Update current date display
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
       const dayOfWeek = dayNames[now.getDay()];
-
       setCurrentDate(`${year}-${month}-${day} (${dayOfWeek}요일)`);
-      setCurrentTime(`${hours}:${minutes}:${seconds} KST`);
     };
     updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
   }, []);
 
-  const { data, isLoading, refetch, isFetching } = useQuery<ApiResponse & { marketStatus: string }>({
-    queryKey: ['quotes', isLiveEnabled],
-    queryFn: async () => {
-      const response = await axios.get(`/api/quotes${isLiveEnabled ? '?live=true' : ''}`);
-      return response.data;
-    },
-    refetchInterval: isLiveEnabled ? 2000 : 30000,
-  });
+  // Synchronize history with current inputs and market data
+  useEffect(() => {
+    if (!isLoaded || !data?.etf) return;
+
+    const totalValuation = data.etf.price * quantity;
+    const dailyProfit = data.etf.changeAmount * quantity;
+    const profitLoss = totalValuation - totalPrincipal;
+    const returnRate = totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
+    
+    // Use Korean local date string for consistent comparison
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    // Update local history state for immediate UI feedback
+    setHistory(prev => {
+      const newHistory = [...prev];
+      const todayIndex = newHistory.findIndex(item => {
+        const itemDate = new Date(item.date);
+        const itemStr = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, '0')}-${String(itemDate.getDate()).padStart(2, '0')}`;
+        return itemStr === todayStr;
+      });
+
+      const updatedItem = {
+        id: todayIndex >= 0 ? newHistory[todayIndex].id : 'temp-id',
+        date: todayStr,
+        avgPrice: avgPrice,
+        currentPrice: data.etf.price,
+        dailyProfit: dailyProfit,
+        returnRate: returnRate,
+        totalValuation: totalValuation
+      };
+
+      if (todayIndex >= 0) {
+        // Only update if something actually changed to avoid unnecessary re-renders
+        const existing = newHistory[todayIndex];
+        const hasChanged = 
+            existing.avgPrice !== updatedItem.avgPrice ||
+            existing.currentPrice !== updatedItem.currentPrice ||
+            existing.dailyProfit !== updatedItem.dailyProfit ||
+            existing.returnRate !== updatedItem.returnRate ||
+            existing.totalValuation !== updatedItem.totalValuation;
+        
+        if (!hasChanged) return prev;
+        newHistory[todayIndex] = updatedItem;
+      } else {
+        newHistory.unshift(updatedItem);
+      }
+      return newHistory;
+    });
+  }, [data?.etf, quantity, avgPrice, totalPrincipal, isLoaded]);
+
+  // Save portfolio AND today's history to DB (Debounced)
+  const saveToDb = useCallback(
+    (() => {
+      let timeout: NodeJS.Timeout;
+      return (payload: any) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(async () => {
+          try {
+            await axios.post('/api/portfolio', payload);
+          } catch (error) {
+            console.error('Failed to save to DB:', error);
+          }
+        }, 1500);
+      };
+    })(),
+    []
+  );
+
+  useEffect(() => {
+    if (!isLoaded || !data?.etf) return;
+    
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const totalValuation = data.etf.price * quantity;
+    const dailyProfit = data.etf.changeAmount * quantity;
+    const profitLoss = totalValuation - totalPrincipal;
+    const returnRate = totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
+
+    saveToDb({ 
+      quantity, 
+      avgPrice, 
+      totalPrincipal,
+      historyItem: {
+        date: todayStr,
+        avgPrice,
+        currentPrice: data.etf.price,
+        dailyProfit,
+        returnRate,
+        totalValuation
+      }
+    });
+  }, [quantity, avgPrice, totalPrincipal, data?.etf, saveToDb, isLoaded]);
 
   const isMarketOpen = data?.marketStatus === 'OPEN';
 
@@ -128,51 +192,24 @@ export default function Home() {
               시장 {isMarketOpen ? '개장' : '마감'}
             </Badge>
             <p className="text-slate-500 text-sm font-medium">
-              날짜: {currentDate || '----.--.--'} {isLiveEnabled && '+ 실시간 시뮬레이션'}
+              날짜: {currentDate || '----.--.--'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-4 bg-slate-950/40 p-2 rounded-2xl border border-slate-800/50 backdrop-blur-md">
-          <div className="px-4 hidden lg:block border-r border-slate-800">
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">기준 시각</p>
-            <p className="text-sm font-mono text-blue-400 font-bold min-w-[90px]">{currentTime || '--:--:-- KST'}</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isLiveEnabled ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsLiveEnabled(!isLiveEnabled)}
-              className={`transition-all duration-300 rounded-xl ${isLiveEnabled ? 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20' : 'bg-slate-950 border-slate-800'}`}
-            >
-              <Activity size={16} className={`mr-2 ${isLiveEnabled ? 'animate-pulse' : ''}`} />
-              {isLiveEnabled ? '실시간 온' : '실시간 시작'}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => refetch()}
-              disabled={isFetching}
-              className="rounded-xl hover:bg-slate-800 text-slate-400"
-            >
-              <RefreshCw size={18} className={`${isFetching ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="rounded-xl hover:bg-slate-800 text-slate-400"
+          >
+            <RefreshCw size={18} className={`${isFetching ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </header>
 
-      {!isMarketOpen && isLiveEnabled && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-3 rounded-xl flex items-center gap-3 text-sm"
-        >
-          <AlertCircle size={18} />
-          현재 시장이 마감되었습니다. 전일 종가 기반 실시간 시뮬레이션을 표시합니다.
-        </motion.div>
-      )}
 
       {/* Hero Section - Balanced Terminal Layout (8:4 Split) */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -180,59 +217,38 @@ export default function Home() {
         <div className="lg:col-span-8 flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <EtfSummaryCard data={data?.etf} isLoading={isLoading} title="KODEX 200" />
-            <EtfSummaryCard data={data?.tiger} isLoading={isLoading} title="TIGER 200" />
+            <DailyProfitCard 
+              changeAmount={data?.etf?.changeAmount} 
+              quantity={quantity} 
+              isLoading={isLoading} 
+            />
           </div>
-          <MyPortfolioCard
-            subtitle="KODEX 200"
-            currentPrice={data?.etf?.price}
-            isLoading={isLoading}
-            quantity={quantity}
-            avgPrice={avgPrice}
-            totalPrincipal={totalPrincipal}
-          />
-          <MyPortfolioCard
-            subtitle="TIGER 200"
-            currentPrice={data?.tiger?.price}
-            isLoading={isLoading}
-            quantity={tigerQuantity}
-            avgPrice={tigerAvgPrice}
-            totalPrincipal={tigerTotalPrincipal}
-          />
           <TotalPortfolioCard
             className="flex-1"
-            totalValuation={(data?.etf?.price ? data.etf.price * quantity : 0) + (data?.tiger?.price ? data.tiger.price * tigerQuantity : 0)}
-            totalPrincipal={totalPrincipal + tigerTotalPrincipal}
+            totalValuation={data?.etf?.price ? data.etf.price * quantity : 0}
+            totalPrincipal={totalPrincipal}
             isLoading={isLoading}
           />
         </div>
 
-        {/* Right Section: Market & Controls (Narrower) */}
+        {/* Right Section: Market (Narrower) */}
         <div className="lg:col-span-4 flex flex-col gap-4">
           <MarketIndices data={data?.marketIndices} isLoading={isLoading} />
-
-          <div className="flex flex-col gap-4">
-            <PortfolioInput
-              subtitle="KODEX 200"
-              quantity={quantity}
-              setQuantity={setQuantity}
-              avgPrice={avgPrice}
-              setAvgPrice={setAvgPrice}
-              totalPrincipal={totalPrincipal}
-              setTotalPrincipal={setTotalPrincipal}
-            />
-
-            <PortfolioInput
-              subtitle="TIGER 200"
-              quantity={tigerQuantity}
-              setQuantity={setTigerQuantity}
-              avgPrice={tigerAvgPrice}
-              setAvgPrice={setTigerAvgPrice}
-              totalPrincipal={tigerTotalPrincipal}
-              setTotalPrincipal={setTigerTotalPrincipal}
-            />
-
-          </div>
+          <PortfolioInput
+            subtitle="KODEX 200"
+            quantity={quantity}
+            setQuantity={setQuantity}
+            avgPrice={avgPrice}
+            setAvgPrice={setAvgPrice}
+            totalPrincipal={totalPrincipal}
+            setTotalPrincipal={setTotalPrincipal}
+          />
         </div>
+      </section>
+
+      {/* History Section */}
+      <section>
+        <PortfolioHistoryTable history={history} isLoading={isLoading} />
       </section>
 
       <footer className="pt-20 pb-1 flex flex-col items-center gap-2 text-slate-600 border-t border-slate-900/50">

@@ -42,57 +42,64 @@ export default function TotalPortfolioCard({ totalValuation, totalPrincipal, isL
                 <CardHeader className="py-2 px-4 border-b border-indigo-900/30">
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-sm font-medium text-indigo-300 flex items-center gap-2">
-                            <Wallet size={16} />
+                            <PieChart size={16} />
                             <span>
-                                총 보유 자산 현황
-                                <span className="text-indigo-400 ml-1.5 font-bold tracking-tight">(합계)</span>
+                                자산 총괄 리포트
                             </span>
                         </CardTitle>
+                        <Badge variant="outline" className="border-indigo-800/50 text-indigo-400 font-normal text-[10px] uppercase tracking-wider">
+                            Portfolio Summary
+                        </Badge>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center">
+                <CardContent className="p-6 pt-4 pb-10 grid grid-cols-1 md:grid-cols-3 items-center gap-y-10">
                     {/* Valuation */}
-                    <div className="space-y-1">
-                        <p className="text-xs text-indigo-300/70">총 평가 금액</p>
-                        <p className="text-2xl font-bold tracking-tight flex items-baseline gap-1 pt-2">
-                            <span className="inline-block scale-y-[1.5] origin-bottom">
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">실시간 평가 금액</p>
+                        <p className="text-3xl font-black tracking-tighter flex items-baseline gap-1.5 pt-8">
+                            <span className="inline-block scale-y-[2.0] origin-bottom text-white leading-none">
                                 {totalValuation.toLocaleString()}
                             </span>
-                            <span className="text-sm text-indigo-400/70 font-normal">원</span>
+                            <span className="text-sm text-indigo-400/50 font-semibold tracking-wide">KRW</span>
                         </p>
-                        <div className="flex flex-col gap-0.5 text-[10px] text-indigo-300/70 font-medium">
-                            <div className="flex items-center gap-1">
-                                <span>총 투자 원금:</span>
-                                <span className="text-indigo-200 font-bold">{totalPrincipal.toLocaleString()}원</span>
-                            </div>
+                        <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+                            <span className="font-medium">투자 원금</span>
+                            <span className="w-1 h-1 rounded-full bg-indigo-500/20" />
+                            <span className="text-indigo-200/60 font-bold">{totalPrincipal.toLocaleString()}원</span>
                         </div>
                     </div>
 
                     {/* Profit/Loss */}
-                    <div className="space-y-1">
-                        <p className="text-xs text-indigo-300/70">총 평가 손익</p>
-                        <div className={`flex items-baseline gap-1 pt-2 ${isPositive ? 'text-red-400' : 'text-blue-400'}`}>
-                            <p className="text-2xl font-bold tracking-tight">
-                                <span className="inline-block scale-y-[1.5] origin-bottom">
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">누적 투자 손익</p>
+                        <div className={`flex items-baseline gap-1.5 pt-8 ${isPositive ? 'text-red-400' : 'text-blue-400'}`}>
+                            <p className="text-3xl font-black tracking-tighter leading-none">
+                                <span className="inline-block scale-y-[2.0] origin-bottom">
                                     {isPositive ? '+' : ''}{profitLoss.toLocaleString()}
                                 </span>
                             </p>
-                            <span className="text-sm font-normal">원</span>
+                            <span className="text-sm font-semibold tracking-wide">KRW</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+                            <span className="font-medium italic">변동액 기준 실시간 점검</span>
                         </div>
                     </div>
 
                     {/* Return Rate */}
-                    <div className="space-y-1">
-                        <p className="text-xs text-indigo-300/70">총 전체 수익률</p>
-                        <div className={`flex items-baseline gap-2 pt-2 ${totalReturnRate >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
-                            {totalReturnRate >= 0 ? <TrendingUp size={20} className="self-center" /> : <TrendingDown size={20} className="self-center" />}
-                            <p className="text-2xl font-bold tracking-tight">
-                                <span className="inline-block scale-y-[1.5] origin-bottom">
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">성과 수익률</p>
+                        <div className={`flex items-baseline gap-2.5 pt-8 ${totalReturnRate >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                            {totalReturnRate >= 0 ? <TrendingUp size={22} className="self-center mb-1" /> : <TrendingDown size={22} className="self-center mb-1" />}
+                            <p className="text-3xl font-black tracking-tighter leading-none">
+                                <span className="inline-block scale-y-[2.0] origin-bottom">
                                     {totalReturnRate >= 0 ? '+' : ''}{totalReturnRate.toFixed(2)}
                                 </span>
                             </p>
-                            <span className="text-sm font-normal">%</span>
+                            <span className="text-sm font-semibold tracking-wide">%</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+                            <span className="font-medium italic">ROI 정밀 분석 결과</span>
                         </div>
                     </div>
                 </CardContent>

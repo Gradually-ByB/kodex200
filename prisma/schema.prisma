@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Portfolio {
+  id             String   @id @default(cuid())
+  quantity       Float    @default(0)
+  avgPrice       Float    @default(0)
+  totalPrincipal Float    @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+model DailyHistory {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  avgPrice       Float
+  currentPrice   Float
+  dailyProfit    Float
+  returnRate     Float
+  totalValuation Float
+  createdAt      DateTime @default(now())
+}
