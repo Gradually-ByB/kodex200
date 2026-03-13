@@ -56,7 +56,7 @@ export default function TotalPortfolioCard({ totalValuation, totalPrincipal, isL
                 <CardContent className="p-6 pt-4 pb-10 grid grid-cols-1 md:grid-cols-3 items-center gap-y-10">
                     {/* Valuation */}
                     <div className="space-y-2">
-                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">실시간 평가 금액</p>
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">실시간 평가 금액</p>
                         <p className="text-3xl font-black tracking-tighter flex items-baseline gap-1.5 pt-8">
                             <span className="inline-block scale-y-[2.0] origin-bottom text-white leading-none">
                                 {totalValuation.toLocaleString()}
@@ -72,7 +72,7 @@ export default function TotalPortfolioCard({ totalValuation, totalPrincipal, isL
 
                     {/* Profit/Loss */}
                     <div className="space-y-2">
-                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">누적 투자 손익</p>
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">누적 투자 손익</p>
                         <div className={`flex items-baseline gap-1.5 pt-8 ${isPositive ? 'text-red-400' : 'text-blue-400'}`}>
                             <p className="text-3xl font-black tracking-tighter leading-none">
                                 <span className="inline-block scale-y-[2.0] origin-bottom">
@@ -88,7 +88,7 @@ export default function TotalPortfolioCard({ totalValuation, totalPrincipal, isL
 
                     {/* Return Rate */}
                     <div className="space-y-2">
-                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-[0.2em]">성과 수익률</p>
+                        <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">성과 수익률</p>
                         <div className={`flex items-baseline gap-2.5 pt-8 ${totalReturnRate >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
                             {totalReturnRate >= 0 ? <TrendingUp size={22} className="self-center mb-1" /> : <TrendingDown size={22} className="self-center mb-1" />}
                             <p className="text-3xl font-black tracking-tighter leading-none">
