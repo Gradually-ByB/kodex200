@@ -25,6 +25,14 @@ const ITEMS_PER_PAGE = 5;
 export default function PortfolioHistoryTable({ history: initialHistory, isLoading }: PortfolioHistoryTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
 
+    const formatDate = (dateValue: string | Date) => {
+        const d = new Date(dateValue);
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const w = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+        return `${m}월 ${day}일 (${w})`;
+    };
+
     if (isLoading) {
         return (
             <Card className="bg-slate-900 border-slate-800 animate-pulse">
@@ -69,14 +77,15 @@ export default function PortfolioHistoryTable({ history: initialHistory, isLoadi
                         <Table>
                             <TableHeader className="bg-slate-900/30">
                                 <TableRow className="border-slate-900 hover:bg-transparent">
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 pl-6">날짜</TableHead>
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4">평균단가</TableHead>
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4">현재가</TableHead>
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4">일간 수익</TableHead>
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-right">수익률</TableHead>
-                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-right pr-6">평가금액</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">날짜</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">평균단가</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">현재가</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">일간 수익</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">수익률</TableHead>
+                                    <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">평가금액</TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody>
                                 <AnimatePresence mode="wait">
                                     {paginatedHistory.length === 0 ? (
@@ -95,28 +104,29 @@ export default function PortfolioHistoryTable({ history: initialHistory, isLoadi
                                                 transition={{ duration: 0.2, delay: idx * 0.05 }}
                                                 className="border-slate-900 hover:bg-slate-900/20 transition-colors group cursor-default"
                                             >
-                                                <TableCell className="font-medium text-slate-300 py-4 text-sm pl-6">
-                                                    {new Date(item.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' })}
+                                                <TableCell className="font-medium text-slate-300 py-4 text-sm text-center">
+                                                    {formatDate(item.date)}
                                                 </TableCell>
-                                                <TableCell className="text-slate-400 text-sm font-medium">
+                                                <TableCell className="text-slate-400 text-sm font-medium text-center">
                                                     {item.avgPrice.toLocaleString()} <span className="text-[10px] opacity-50 font-normal">원</span>
                                                 </TableCell>
-                                                <TableCell className="text-slate-100 font-bold text-sm">
+                                                <TableCell className="text-slate-100 font-bold text-sm text-center">
                                                     {item.currentPrice.toLocaleString()} <span className="text-[10px] opacity-50 font-normal">원</span>
                                                 </TableCell>
-                                                <TableCell className={`py-4 ${item.dailyProfit > 0 ? 'text-red-400' : item.dailyProfit < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
-                                                    <div className="flex items-center gap-1.5 text-sm font-bold">
+                                                <TableCell className={`py-4 text-center ${item.dailyProfit > 0 ? 'text-red-400' : item.dailyProfit < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                                                    <div className="flex items-center justify-center gap-1.5 text-sm font-bold">
                                                         {item.dailyProfit > 0 ? <TrendingUp size={14} /> : item.dailyProfit < 0 ? <TrendingDown size={14} /> : <Minus size={14} />}
                                                         {item.dailyProfit > 0 ? '+' : ''}{item.dailyProfit.toLocaleString()}
                                                         <span className="text-[10px] ml-0.5 font-normal opacity-60">원</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className={`text-right py-4 text-sm font-bold ${item.returnRate >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                                                <TableCell className={`py-4 text-sm font-bold text-center ${item.returnRate >= 0 ? 'text-red-400' : 'text-blue-400'}`}>
                                                     {item.returnRate >= 0 ? '+' : ''}{item.returnRate.toFixed(2)} %
                                                 </TableCell>
-                                                <TableCell className="text-right text-slate-200 font-black tracking-tighter text-sm py-4 pr-6">
+                                                <TableCell className="text-slate-200 font-black tracking-tighter text-sm py-4 text-center">
                                                     {item.totalValuation.toLocaleString()} <span className="text-[10px] text-slate-500 font-normal">KRW</span>
                                                 </TableCell>
+
                                             </motion.tr>
                                         ))
                                     )}
