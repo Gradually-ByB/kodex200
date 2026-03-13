@@ -29,7 +29,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        const response = await axios.get('/api/portfolio');
+        const response = await axios.get(`/api/portfolio?t=${new Date().getTime()}`);
         if (response.data.portfolio) {
           const { quantity, avgPrice, totalPrincipal } = response.data.portfolio;
           setQuantity(quantity);
