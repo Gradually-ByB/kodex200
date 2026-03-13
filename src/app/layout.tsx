@@ -14,12 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="dark" suppressHydrationWarning>
-      <body
-        className="font-sans antialiased bg-slate-950 text-slate-50"
-      >
-        <Providers>
-          {children}
-        </Providers>
+      <body className="font-sans antialiased bg-slate-950 text-slate-50">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
