@@ -41,8 +41,13 @@ export default function PortfolioHistoryTable({ history: initialHistory, isLoadi
         );
     }
 
-    // Sort history by date descending to ensure newest is first
-    const history = [...initialHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // Filter out weekends and sort history by date descending
+    const history = [...initialHistory]
+        .filter(item => {
+            const day = new Date(item.date).getDay();
+            return day !== 0 && day !== 6;
+        })
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const totalPages = Math.max(1, Math.ceil(history.length / ITEMS_PER_PAGE));
     const paginatedHistory = history.slice(
