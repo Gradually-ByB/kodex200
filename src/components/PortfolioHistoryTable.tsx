@@ -163,18 +163,10 @@ export default function PortfolioHistoryTable({
                             {formatDate(item.date)}
                           </TableCell>
                           <TableCell className="text-slate-400 text-sm font-medium text-center">
-                            {prevClose > 0 ? prevClose.toLocaleString() : "-"}
-                            {prevClose > 0 && (
-                              <span className="text-[10px] opacity-50 font-normal ml-0.5">
-                                원
-                              </span>
-                            )}
+                            {prevClose > 0 ? prevClose.toLocaleString() : "-"}{prevClose > 0 && <span className="text-[10px] opacity-50 font-normal ml-1">원</span>}
                           </TableCell>
                           <TableCell className="text-slate-100 font-bold text-sm text-center">
-                            {item.currentPrice.toLocaleString()}{" "}
-                            <span className="text-[10px] opacity-50 font-normal">
-                              원
-                            </span>
+                            {item.currentPrice.toLocaleString()}<span className="text-[10px] opacity-50 font-normal ml-1">원</span>
                           </TableCell>
                           <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-red-400" : diffPrice < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {prevClose > 0 ? (
@@ -195,19 +187,16 @@ export default function PortfolioHistoryTable({
                           <TableCell
                             className={`py-4 text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}
                           >
-                            <div className="flex items-center justify-center gap-1.5 text-sm font-bold">
+                            <div className="flex items-center justify-center text-sm font-bold">
                               {item.dailyProfit > 0 ? (
-                                <TrendingUp size={14} />
+                                <TrendingUp size={14} className="mr-1.5" />
                               ) : item.dailyProfit < 0 ? (
-                                <TrendingDown size={14} />
+                                <TrendingDown size={14} className="mr-1.5" />
                               ) : (
-                                <Minus size={14} />
+                                <Minus size={14} className="mr-1.5" />
                               )}
-                              {item.dailyProfit > 0 ? "+" : ""}
-                              {item.dailyProfit.toLocaleString()}
-                              <span className="text-[10px] ml-0.5 font-normal opacity-60">
-                                원
-                              </span>
+                              <span>{item.dailyProfit > 0 ? "+" : ""}{item.dailyProfit.toLocaleString()}</span>
+                              <span className="text-[10px] font-normal opacity-60 ml-1">원</span>
                             </div>
                           </TableCell>
                           <TableCell
