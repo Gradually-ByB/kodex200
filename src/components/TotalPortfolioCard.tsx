@@ -71,7 +71,7 @@ export default function TotalPortfolioCard({
                 {totalValuation.toLocaleString()}
               </span>
               <span className="text-sm text-indigo-400/50 font-semibold tracking-wide">
-                KRW
+                원
               </span>
             </p>
             <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
@@ -97,7 +97,7 @@ export default function TotalPortfolioCard({
                   {profitLoss.toLocaleString()}
                 </span>
               </p>
-              <span className="text-sm font-semibold tracking-wide">KRW</span>
+              <span className="text-sm font-semibold tracking-wide">원</span>
             </div>
             <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
               <span className="font-medium italic">

@@ -111,10 +111,13 @@ export default function PortfolioHistoryTable({
                     날짜
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
-                    평균단가
+                    전일 종가
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     현재가
+                  </TableHead>
+                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                    전일대비
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     일간 수익
@@ -133,69 +136,95 @@ export default function PortfolioHistoryTable({
                   {paginatedHistory.length === 0 ? (
                     <TableRow className="border-slate-900">
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="h-32 text-center text-slate-500 text-sm italic"
                       >
                         기록된 히스토리가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paginatedHistory.map((item, idx) => (
-                      <motion.tr
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 10 }}
-                        transition={{ duration: 0.2, delay: idx * 0.05 }}
-                        className="border-slate-900 hover:bg-slate-900/20 transition-colors group cursor-default"
-                      >
-                        <TableCell className="font-medium text-slate-300 py-4 text-sm text-center">
-                          {formatDate(item.date)}
-                        </TableCell>
-                        <TableCell className="text-slate-400 text-sm font-medium text-center">
-                          {item.avgPrice.toLocaleString()}{" "}
-                          <span className="text-[10px] opacity-50 font-normal">
-                            원
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-slate-100 font-bold text-sm text-center">
-                          {item.currentPrice.toLocaleString()}{" "}
-                          <span className="text-[10px] opacity-50 font-normal">
-                            원
-                          </span>
-                        </TableCell>
-                        <TableCell
-                          className={`py-4 text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}
+                    paginatedHistory.map((item, idx) => {
+                      // 전체 history 배열에서 현재 아이템의 실제 인덱스를 찾음
+                      const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
+                      // 전일 종가는 다음 인덱스(이전 날짜)의 currentPrice임
+                      const prevClose = history[actualIdx + 1]?.currentPrice || 0;
+                      const diffPrice = prevClose > 0 ? item.currentPrice - prevClose : 0;
+
+                      return (
+                        <motion.tr
+                          key={item.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ duration: 0.2, delay: idx * 0.05 }}
+                          className="border-slate-900 hover:bg-slate-900/20 transition-colors group cursor-default"
                         >
-                          <div className="flex items-center justify-center gap-1.5 text-sm font-bold">
-                            {item.dailyProfit > 0 ? (
-                              <TrendingUp size={14} />
-                            ) : item.dailyProfit < 0 ? (
-                              <TrendingDown size={14} />
-                            ) : (
-                              <Minus size={14} />
+                          <TableCell className="font-medium text-slate-300 py-4 text-sm text-center">
+                            {formatDate(item.date)}
+                          </TableCell>
+                          <TableCell className="text-slate-400 text-sm font-medium text-center">
+                            {prevClose > 0 ? prevClose.toLocaleString() : "-"}
+                            {prevClose > 0 && (
+                              <span className="text-[10px] opacity-50 font-normal ml-0.5">
+                                원
+                              </span>
                             )}
-                            {item.dailyProfit > 0 ? "+" : ""}
-                            {item.dailyProfit.toLocaleString()}
-                            <span className="text-[10px] ml-0.5 font-normal opacity-60">
+                          </TableCell>
+                          <TableCell className="text-slate-100 font-bold text-sm text-center">
+                            {item.currentPrice.toLocaleString()}{" "}
+                            <span className="text-[10px] opacity-50 font-normal">
                               원
                             </span>
-                          </div>
-                        </TableCell>
-                        <TableCell
-                          className={`py-4 text-sm font-bold text-center ${item.returnRate >= 0 ? "text-red-400" : "text-blue-400"}`}
-                        >
-                          {item.returnRate >= 0 ? "+" : ""}
-                          {item.returnRate.toFixed(2)} %
-                        </TableCell>
-                        <TableCell className="text-slate-200 font-black tracking-tighter text-sm py-4 text-center">
-                          {item.totalValuation.toLocaleString()}{" "}
-                          <span className="text-[10px] text-slate-500 font-normal">
-                            KRW
-                          </span>
-                        </TableCell>
-                      </motion.tr>
-                    ))
+                          </TableCell>
+                          <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-red-400" : diffPrice < 0 ? "text-blue-400" : "text-slate-400"}`}>
+                            {prevClose > 0 ? (
+                              <div className="flex items-center justify-center gap-1">
+                                {diffPrice > 0 ? (
+                                  <TrendingUp size={12} />
+                                ) : diffPrice < 0 ? (
+                                  <TrendingDown size={12} />
+                                ) : (
+                                  <Minus size={12} />
+                                )}
+                                <span>{diffPrice > 0 ? "+" : ""}{diffPrice.toLocaleString()}</span>
+                              </div>
+                            ) : (
+                              <span className="opacity-30">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell
+                            className={`py-4 text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}
+                          >
+                            <div className="flex items-center justify-center gap-1.5 text-sm font-bold">
+                              {item.dailyProfit > 0 ? (
+                                <TrendingUp size={14} />
+                              ) : item.dailyProfit < 0 ? (
+                                <TrendingDown size={14} />
+                              ) : (
+                                <Minus size={14} />
+                              )}
+                              {item.dailyProfit > 0 ? "+" : ""}
+                              {item.dailyProfit.toLocaleString()}
+                              <span className="text-[10px] ml-0.5 font-normal opacity-60">
+                                원
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell
+                            className={`py-4 text-sm font-bold text-center ${item.returnRate >= 0 ? "text-red-400" : "text-blue-400"}`}
+                          >
+                            {item.returnRate >= 0 ? "+" : ""}
+                            {item.returnRate.toFixed(2)} %
+                          </TableCell>
+                          <TableCell className="text-slate-200 font-black tracking-tighter text-sm py-4 text-center">
+                            {item.totalValuation.toLocaleString()}{" "}
+                            <span className="text-[10px] text-slate-500 font-normal">
+                              원
+                            </span>
+                          </TableCell>
+                        </motion.tr>
+                      );
+                    })
                   )}
                 </AnimatePresence>
               </TableBody>

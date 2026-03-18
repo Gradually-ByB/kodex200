@@ -53,7 +53,7 @@ export default function EtfSummaryCard({
               <h2 className="text-4xl font-bold tracking-tight">
                 {data.price.toLocaleString()}
                 <span className="text-slate-500 text-lg ml-2 font-normal">
-                  KRW
+                  원
                 </span>
               </h2>
             </div>

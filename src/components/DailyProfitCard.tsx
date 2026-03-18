@@ -58,7 +58,7 @@ export default function DailyProfitCard({
                   {dailyProfit.toLocaleString()}
                 </span>
               </h2>
-              <span className="text-slate-500 text-xs font-semibold">KRW</span>
+              <span className="text-slate-500 text-xs font-semibold">원</span>
             </div>
             <div className="mt-8 flex items-center gap-2 text-[11px] text-slate-500 font-medium italic">
               {isPositive ? (
