@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -67,12 +67,14 @@ export default function PortfolioHistoryTable({
   }
 
   // Filter out weekends and sort history by date descending
-  const history = [...initialHistory]
-    .filter((item) => {
-      const day = new Date(item.date).getDay();
-      return day !== 0 && day !== 6;
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const history = useMemo(() => {
+    return [...initialHistory]
+      .filter((item) => {
+        const day = new Date(item.date).getDay();
+        return day !== 0 && day !== 6;
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [initialHistory]);
 
   const totalPages = Math.max(1, Math.ceil(history.length / ITEMS_PER_PAGE));
   const paginatedHistory = history.slice(
@@ -126,6 +128,9 @@ export default function PortfolioHistoryTable({
                     수익률
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                    누적 손익
+                  </TableHead>
+                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     평가금액
                   </TableHead>
                 </TableRow>
@@ -136,7 +141,7 @@ export default function PortfolioHistoryTable({
                   {paginatedHistory.length === 0 ? (
                     <TableRow className="border-slate-900">
                       <TableCell
-                        colSpan={7}
+                        colSpan={8}
                         className="h-32 text-center text-slate-500 text-sm italic"
                       >
                         기록된 히스토리가 없습니다.
@@ -148,7 +153,16 @@ export default function PortfolioHistoryTable({
                       const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
                       // 전일 종가는 다음 인덱스(이전 날짜)의 currentPrice임
                       const prevClose = history[actualIdx + 1]?.currentPrice || 0;
-                      const diffPrice = prevClose > 0 ? item.currentPrice - prevClose : 0;
+                      const diffPrice =
+                        prevClose > 0 ? item.currentPrice - prevClose : 0;
+
+                      // 누적 수익금 계산 (원금 기반)
+                      const cumulativeProfit = Math.round(
+                        item.totalValuation -
+                          item.totalValuation / (1 + item.returnRate / 100),
+                      );
+                      const isCPositive = cumulativeProfit > 0;
+                      const isCNegative = cumulativeProfit < 0;
 
                       return (
                         <motion.tr
@@ -204,6 +218,23 @@ export default function PortfolioHistoryTable({
                           >
                             {item.returnRate >= 0 ? "+" : ""}
                             {item.returnRate.toFixed(2)} %
+                          </TableCell>
+                          <TableCell
+                            className={`py-4 text-center ${isCPositive ? "text-red-400" : isCNegative ? "text-blue-400" : "text-slate-400"}`}
+                          >
+                            <div className="flex items-center justify-center text-sm font-bold">
+                              {isCPositive ? (
+                                <TrendingUp size={14} className="mr-1.5" />
+                              ) : isCNegative ? (
+                                <TrendingDown size={14} className="mr-1.5" />
+                              ) : (
+                                <Minus size={14} className="mr-1.5" />
+                              )}
+                              <span>{cumulativeProfit.toLocaleString()}</span>
+                              <span className="text-[10px] font-normal opacity-60 ml-1">
+                                원
+                              </span>
+                            </div>
                           </TableCell>
                           <TableCell className="text-slate-200 font-black tracking-tighter text-sm py-4 text-center">
                             {item.totalValuation.toLocaleString()}{" "}

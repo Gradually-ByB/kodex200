@@ -45,13 +45,12 @@ export default function DailyProfitCard({
             </p>
             <div className="flex items-baseline gap-2 pt-4">
               <h2
-                className={`text-2xl font-black tracking-tighter transition-all duration-300 ${
-                  isPositive
-                    ? "text-red-400"
-                    : isNegative
-                      ? "text-blue-400"
-                      : "text-slate-400"
-                }`}
+                className={`text-2xl font-black tracking-tighter transition-all duration-300 ${isPositive
+                  ? "text-red-400"
+                  : isNegative
+                    ? "text-blue-400"
+                    : "text-slate-400"
+                  }`}
               >
                 <span className="inline-block scale-y-[1.5] origin-bottom leading-none">
                   {isPositive ? "+" : ""}
