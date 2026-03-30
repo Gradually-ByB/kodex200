@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     // 2. Fetch Indicators
     const fetchIndicators = axios
       .get(
-        "https://stock.naver.com/api/securityService/integration/indicators?indicatorCodes=FX_USDKRW",
+        "https://stock.naver.com/api/securityService/integration/indicators?indicatorCodes[]=FX_USDKRW",
         { headers: NAVER_HEADERS },
       )
       .catch((err) => {

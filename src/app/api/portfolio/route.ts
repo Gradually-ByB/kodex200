@@ -10,7 +10,7 @@ export async function GET() {
       prisma.portfolio.findFirst(),
       prisma.dailyHistory.findMany({
         orderBy: { date: "desc" },
-        take: 30,
+        take: 100, // Increased to 100 to show data from February and earlier
       }),
     ]);
     return NextResponse.json({ portfolio, history });
