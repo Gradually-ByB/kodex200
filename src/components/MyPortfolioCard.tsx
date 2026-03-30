@@ -34,7 +34,7 @@ export default function MyPortfolioCard({
 
   if (isLoading || !currentPrice) {
     return (
-      <Card className="bg-slate-900 border-slate-800 animate-pulse mt-4">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md animate-pulse mt-4">
         <CardContent className="p-3 h-32" />
       </Card>
     );
@@ -54,14 +54,14 @@ export default function MyPortfolioCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 text-slate-50 mt-4 relative overflow-hidden">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md text-slate-100 mt-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-5 opacity-5 pointer-events-none">
           <Wallet size={130} />
         </div>
 
-        <CardHeader className="py-2 px-4 border-b border-slate-800/50">
+        <CardHeader className="py-2 px-4 border-b border-slate-700/50">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2">
               <Wallet size={16} />
               <span>
                 내 보유 자산 현황
@@ -84,14 +84,14 @@ export default function MyPortfolioCard({
         <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3">
           {/* Valuation */}
           <div className="space-y-1">
-            <p className="text-xs text-slate-500">총 평가 금액</p>
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">총 평가 금액</p>
             <p className="text-2xl font-bold tracking-tight flex items-baseline gap-1 pt-2">
               <span className="inline-block scale-y-[1.5] origin-bottom">
                 {valuation.toLocaleString()}
               </span>
-              <span className="text-sm text-slate-500 font-normal">원</span>
+              <span className="text-sm text-slate-400 font-normal">원</span>
             </p>
-            <div className="flex flex-col gap-0.5 text-[10px] text-slate-500 font-medium">
+            <div className="flex flex-col gap-0.5 text-[10px] text-slate-400 font-medium">
               <div className="flex items-center gap-1">
                 <span>투자 원금:</span>
                 <span className="text-slate-300 font-bold">
@@ -103,9 +103,9 @@ export default function MyPortfolioCard({
 
           {/* Profit/Loss */}
           <div className="space-y-1">
-            <p className="text-xs text-slate-500">평가 손익</p>
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">평가 손익</p>
             <div
-              className={`flex items-baseline gap-1 pt-2 ${isPositive ? "text-red-400" : "text-blue-400"}`}
+              className={`flex items-baseline gap-1 pt-2 ${isPositive ? "text-red-500" : "text-blue-500"}`}
             >
               <p className="text-2xl font-bold tracking-tight">
                 <span className="inline-block scale-y-[1.5] origin-bottom">
@@ -115,16 +115,16 @@ export default function MyPortfolioCard({
               </p>
               <span className="text-sm font-normal">원</span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-slate-500">
+            <div className="flex items-center gap-1 text-xs text-slate-400">
               <span>평단가: {avgPrice.toLocaleString()}원</span>
             </div>
           </div>
 
           {/* Return Rate */}
           <div className="space-y-1">
-            <p className="text-xs text-slate-500">전체 수익률</p>
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">전체 수익률</p>
             <div
-              className={`flex items-baseline gap-2 pt-2 ${totalReturnRate >= 0 ? "text-red-400" : "text-blue-400"}`}
+              className={`flex items-baseline gap-2 pt-2 ${totalReturnRate >= 0 ? "text-red-500" : "text-blue-500"}`}
             >
               {totalReturnRate >= 0 ? (
                 <TrendingUp size={20} className="self-center" />

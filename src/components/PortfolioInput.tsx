@@ -25,10 +25,10 @@ export default function PortfolioInput({
   setTotalPrincipal,
 }: PortfolioInputProps) {
   return (
-    <Card className="flex-1 bg-slate-900/50 border-slate-800 backdrop-blur-xl relative overflow-hidden">
-      <CardHeader className="py-2 px-4 border-b border-slate-800/50">
+    <Card className="flex-1 bg-slate-900/80 border-slate-700/50 backdrop-blur-md relative overflow-hidden">
+      <CardHeader className="py-2 px-4 border-b border-slate-700/50">
         <div className="flex flex-col gap-0.5">
-          <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2 uppercase tracking-wide">
+          <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-2 uppercase tracking-wide">
             <Settings2 size={16} />
             투자 정보 설정
           </CardTitle>
@@ -43,7 +43,7 @@ export default function PortfolioInput({
         <div className="space-y-1">
           <Label
             htmlFor="quantity"
-            className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider"
+            className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider"
           >
             보유 수량(주)
           </Label>
@@ -56,13 +56,13 @@ export default function PortfolioInput({
               const numericValue = rawValue ? parseInt(rawValue, 10) : 0;
               setQuantity(numericValue);
             }}
-            className="h-9 bg-slate-950 border-slate-800 focus:border-blue-500/50 focus:ring-blue-500/20 text-slate-200 font-mono text-base text-right"
+            className="h-9 bg-slate-800/50 border-slate-700/50 focus:border-blue-500/50 focus:ring-blue-500/20 text-slate-100 font-mono text-base text-right"
           />
         </div>
         <div className="space-y-1">
           <Label
             htmlFor="avgPrice"
-            className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider"
+            className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider"
           >
             평균 단가(원)
           </Label>
@@ -75,13 +75,13 @@ export default function PortfolioInput({
               const numericValue = rawValue ? parseInt(rawValue, 10) : 0;
               setAvgPrice(numericValue);
             }}
-            className="h-9 bg-slate-950 border-slate-800 focus:border-blue-500/50 focus:ring-blue-500/20 text-slate-200 font-mono text-base text-right"
+            className="h-9 bg-slate-800/50 border-slate-700/50 focus:border-blue-500/50 focus:ring-blue-500/20 text-slate-100 font-mono text-base text-right"
           />
         </div>
         <div className="space-y-1">
           <Label
             htmlFor="totalPrincipal"
-            className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider text-blue-400"
+            className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider text-blue-400"
           >
             투자 원금(원)
           </Label>
@@ -94,7 +94,7 @@ export default function PortfolioInput({
               const numericValue = rawValue ? parseInt(rawValue, 10) : 0;
               setTotalPrincipal(numericValue);
             }}
-            className="h-9 bg-slate-950 border-blue-900/40 focus:border-blue-500/50 focus:ring-blue-500/20 text-blue-400 font-mono text-base text-right shadow-[0_0_15px_rgba(59,130,246,0.05)]"
+            className="h-9 bg-blue-900/10 border-blue-900/40 focus:border-blue-500/50 focus:ring-blue-500/20 text-blue-400 font-mono text-base text-right shadow-[0_0_15px_rgba(59,130,246,0.05)]"
           />
         </div>
       </CardContent>

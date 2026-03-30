@@ -21,7 +21,7 @@ export default function MarketIndices({
 }: MarketIndicesProps) {
   if (isLoading || !data) {
     return (
-      <Card className="bg-slate-900 border-slate-800 animate-pulse">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md animate-pulse">
         <CardContent className="h-40" />
       </Card>
     );
@@ -33,7 +33,7 @@ export default function MarketIndices({
 
     return (
       <div
-        className={`relative overflow-hidden p-4 ${!isLast ? "border-b border-slate-800/50" : ""}`}
+        className={`relative overflow-hidden p-4 ${!isLast ? "border-b border-slate-700/50" : ""}`}
       >
         {/* Background Icon */}
         <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
@@ -48,14 +48,14 @@ export default function MarketIndices({
 
         <div className="flex justify-between items-center relative z-10">
           <div>
-            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-0.5">
+            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest mb-0.5">
               {title}
             </p>
             <h2 className="text-2xl font-bold tracking-tight text-slate-100 leading-tight">
               {index.value.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
               })}
-              <span className="text-slate-500 text-xs ml-1 font-normal tracking-normal uppercase text-opacity-60">
+              <span className="text-slate-400 text-xs ml-1 font-normal tracking-normal uppercase text-opacity-60">
                 pt
               </span>
             </h2>
@@ -65,7 +65,7 @@ export default function MarketIndices({
               isPositive
                 ? "bg-red-500/10 text-red-500"
                 : isNegative
-                  ? "bg-blue-500/10 text-blue-400"
+                  ? "bg-blue-500/10 text-blue-500"
                   : "bg-slate-500/10 text-slate-400"
             }`}
           >
@@ -93,9 +93,9 @@ export default function MarketIndices({
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 text-white overflow-hidden flex flex-col">
-        <CardHeader className="py-1 px-4 border-b border-slate-800/50">
-          <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-1">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md text-slate-100 overflow-hidden flex flex-col">
+        <CardHeader className="py-1 px-4 border-b border-slate-700/50">
+          <CardTitle className="text-sm font-medium text-slate-300 flex items-center gap-1">
             <Activity size={16} />
             시장 주요 지수
           </CardTitle>

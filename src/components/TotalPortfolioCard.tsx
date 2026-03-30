@@ -40,7 +40,7 @@ export default function TotalPortfolioCard({
       transition={{ duration: 0.5, delay: 0.2 }}
       className={`flex flex-col ${className || ""}`}
     >
-      <Card className="bg-gradient-to-br from-indigo-950 to-slate-950 border-indigo-900/50 text-slate-50 mt-4 relative overflow-hidden flex-1 flex flex-col justify-center">
+      <Card className="bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border-indigo-500/30 text-slate-100 mt-4 relative overflow-hidden flex-1 flex flex-col justify-center backdrop-blur-md">
         <div className="absolute top-0 right-0 p-5 opacity-5 pointer-events-none">
           <PieChart size={130} />
         </div>
@@ -53,7 +53,7 @@ export default function TotalPortfolioCard({
             </CardTitle>
             <Badge
               variant="outline"
-              className="border-indigo-800/50 text-indigo-400 font-normal text-[10px] uppercase tracking-wider"
+              className="border-indigo-400/30 text-indigo-300 font-normal text-[10px] uppercase tracking-wider"
             >
               Portfolio Summary
             </Badge>
@@ -63,7 +63,7 @@ export default function TotalPortfolioCard({
         <CardContent className="p-6 pt-4 pb-10 grid grid-cols-1 md:grid-cols-3 items-center gap-y-10">
           {/* Valuation */}
           <div className="space-y-2">
-            <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">
               실시간 평가 금액
             </p>
             <p className="text-3xl font-black tracking-tighter flex items-baseline gap-1.5 pt-8">
@@ -74,10 +74,10 @@ export default function TotalPortfolioCard({
                 원
               </span>
             </p>
-            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/60">
               <span className="font-medium">투자 원금</span>
               <span className="w-1 h-1 rounded-full bg-indigo-500/20" />
-              <span className="text-indigo-200/60 font-bold">
+              <span className="text-indigo-200/80 font-bold">
                 {totalPrincipal.toLocaleString()}원
               </span>
             </div>
@@ -85,11 +85,11 @@ export default function TotalPortfolioCard({
 
           {/* Profit/Loss */}
           <div className="space-y-2">
-            <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">
               누적 투자 손익
             </p>
             <div
-              className={`flex items-baseline gap-1.5 pt-8 ${isPositive ? "text-red-400" : "text-blue-400"}`}
+              className={`flex items-baseline gap-1.5 pt-8 ${isPositive ? "text-red-500" : "text-blue-500"}`}
             >
               <p className="text-3xl font-black tracking-tighter leading-none">
                 <span className="inline-block scale-y-[2.0] origin-bottom">
@@ -99,7 +99,7 @@ export default function TotalPortfolioCard({
               </p>
               <span className="text-sm font-semibold tracking-wide">원</span>
             </div>
-            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/60">
               <span className="font-medium italic">
                 변동액 기준 실시간 점검
               </span>
@@ -108,11 +108,11 @@ export default function TotalPortfolioCard({
 
           {/* Return Rate */}
           <div className="space-y-2">
-            <p className="text-xs font-bold text-indigo-300/40 uppercase tracking-normal">
-              성과 수익률
+            <p className="text-xs font-bold text-indigo-300 uppercase tracking-normal">
+              수익률
             </p>
             <div
-              className={`flex items-baseline gap-2.5 pt-8 ${totalReturnRate >= 0 ? "text-red-400" : "text-blue-400"}`}
+              className={`flex items-baseline gap-2.5 pt-8 ${totalReturnRate >= 0 ? "text-red-500" : "text-blue-500"}`}
             >
               {totalReturnRate >= 0 ? (
                 <TrendingUp size={22} className="self-center mb-1" />
@@ -127,7 +127,7 @@ export default function TotalPortfolioCard({
               </p>
               <span className="text-sm font-semibold tracking-wide">%</span>
             </div>
-            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/30">
+            <div className="flex items-center gap-2 pt-8 text-[11px] text-indigo-300/60">
               <span className="font-medium italic">ROI 정밀 분석 결과</span>
             </div>
           </div>

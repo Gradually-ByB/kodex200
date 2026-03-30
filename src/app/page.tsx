@@ -192,14 +192,14 @@ export default function Home() {
           <div className="flex items-center gap-3 mt-2">
             <Badge
               variant="outline"
-              className={`flex items-center gap-1.5 py-1 px-3 border-slate-800 ${isMarketOpen ? "text-green-400 bg-green-400/5" : "text-slate-500 bg-slate-900"}`}
+              className={`flex items-center gap-1.5 py-1 px-3 border-slate-700/50 ${isMarketOpen ? "text-green-400 bg-green-400/5" : "text-slate-400 bg-slate-900/80 backdrop-blur-md"}`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${isMarketOpen ? "bg-green-500 animate-pulse" : "bg-slate-700"}`}
+                className={`w-2 h-2 rounded-full ${isMarketOpen ? "bg-green-500 animate-pulse" : "bg-slate-500"}`}
               />
               시장 {isMarketOpen ? "개장" : "마감"}
             </Badge>
-            <p className="text-slate-500 text-sm font-medium">
+            <p className="text-slate-400 text-sm font-medium">
               날짜: {currentDate || "----.--.--"}
             </p>
           </div>
@@ -250,8 +250,8 @@ export default function Home() {
         <PortfolioHistoryTable history={history} isLoading={isLoading} />
       </section>
 
-      <footer className="pt-20 pb-1 flex flex-col items-center gap-2 text-slate-600 border-t border-slate-900/50">
-        <p className="text-[14px] font-bold">
+      <footer className="pt-20 pb-1 flex flex-col items-center gap-2 text-slate-500 border-t border-slate-800/50">
+        <p className="text-[14px] font-bold tracking-tight">
           &copy; 2026 KODEX200 HTS. All rights reserved by Aufemir.
         </p>
       </footer>

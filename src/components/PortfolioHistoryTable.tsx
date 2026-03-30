@@ -54,7 +54,7 @@ export default function PortfolioHistoryTable({
     const dateStr = typeof dateValue === 'string' ? dateValue.split('T')[0] : dateValue.toISOString().split('T')[0];
     const parts = dateStr.split('-');
     const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-    
+
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const w = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
@@ -86,37 +86,37 @@ export default function PortfolioHistoryTable({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
     >
-      <Card className="bg-slate-950 border-slate-900 shadow-2xl overflow-hidden backdrop-blur-sm bg-white/[0.02]">
-        <CardHeader className="border-b border-slate-900/50 bg-slate-950/50 py-4 flex flex-row items-center justify-between space-y-0">
+      <Card className="bg-slate-900/80 border-slate-700/50 shadow-2xl overflow-hidden backdrop-blur-md">
+        <CardHeader className="border-b border-slate-700/50 bg-slate-900/50 py-4 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-500/10 rounded-lg">
+            <div className="p-2 bg-indigo-500/20 rounded-lg">
               <History className="text-indigo-400" size={20} />
             </div>
             <div>
-              <CardTitle className="text-lg font-bold text-white tracking-tight">
+              <CardTitle className="text-lg font-bold text-slate-100 tracking-tight">
                 일간 투자 히스토리
               </CardTitle>
-              <p className="text-xs text-slate-500 font-medium">최초 투자 시점부터 현재까지의 기록입니다.</p>
+              <p className="text-xs text-slate-400 font-medium">최초 투자 시점부터 현재까지의 기록입니다.</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-slate-500 mr-2 tabular-nums">
               {currentPage} / {totalPages}
             </span>
             <div className="flex gap-1">
-              <Button 
-                variant="outline" 
-                size="icon" 
+              <Button
+                variant="outline"
+                size="icon"
                 className="h-8 w-8 bg-slate-900 border-slate-800 hover:bg-slate-800 hover:text-white text-slate-400 disabled:opacity-20"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1 || isLoading}
               >
                 <ChevronLeft size={16} />
               </Button>
-              <Button 
-                variant="outline" 
-                size="icon" 
+              <Button
+                variant="outline"
+                size="icon"
                 className="h-8 w-8 bg-slate-900 border-slate-800 hover:bg-slate-800 hover:text-white text-slate-400 disabled:opacity-20"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages || history.length === 0 || isLoading}
@@ -129,30 +129,30 @@ export default function PortfolioHistoryTable({
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-900/30">
-                <TableRow className="border-slate-900 border-b hover:bg-transparent">
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 w-[100px] text-center">
+              <TableHeader className="bg-slate-800/50">
+                <TableRow className="border-slate-800 border-b hover:bg-transparent">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 w-[100px] text-center">
                     날짜
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     전일 종가
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     금일 종가
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     전일대비
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     일간 수익
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     수익률
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     누적 손익
                   </TableHead>
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                  <TableHead className="text-slate-400 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     평가금액
                   </TableHead>
                 </TableRow>
@@ -193,20 +193,20 @@ export default function PortfolioHistoryTable({
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 10 }}
                           transition={{ duration: 0.2, delay: idx * 0.05 }}
-                          className="border-slate-900 hover:bg-slate-900/20 transition-colors group cursor-default"
+                          className="border-slate-800 hover:bg-slate-800/50 transition-colors group cursor-default"
                         >
-                          <TableCell className="font-medium text-slate-300 py-4 text-sm text-center">
+                          <TableCell className="font-medium text-slate-200 py-4 text-sm text-center">
                             {formatDate(item.date)}
                           </TableCell>
-                          <TableCell className="text-slate-400 text-sm font-medium text-center">
+                          <TableCell className="text-slate-300 text-sm font-medium text-center">
                             {prevClose > 0 ? prevClose.toLocaleString() : "-"}
                             {prevClose > 0 && <span className="text-[10px] opacity-40 ml-1">원</span>}
                           </TableCell>
-                          <TableCell className="text-slate-100 font-bold text-sm text-center">
+                          <TableCell className="text-white font-bold text-sm text-center">
                             {item.currentPrice.toLocaleString()}
                             <span className="text-[10px] opacity-40 ml-1">원</span>
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-rose-400" : diffPrice < 0 ? "text-indigo-400" : "text-slate-400"}`}>
+                          <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-red-400" : diffPrice < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {prevClose > 0 ? (
                               <div className="flex items-center justify-center gap-1">
                                 {diffPrice > 0 ? <TrendingUp size={12} /> : diffPrice < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
@@ -216,19 +216,19 @@ export default function PortfolioHistoryTable({
                               <span className="opacity-30">-</span>
                             )}
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${item.dailyProfit > 0 ? "text-rose-400" : item.dailyProfit < 0 ? "text-indigo-400" : "text-slate-400"}`}>
+                          <TableCell className={`text-sm font-bold text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {item.dailyProfit > 0 ? "+" : ""}
                             {Math.round(item.dailyProfit).toLocaleString()}
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${item.returnRate > 0 ? "text-rose-400" : item.returnRate < 0 ? "text-indigo-400" : "text-slate-400"}`}>
+                          <TableCell className={`text-sm font-bold text-center ${item.returnRate > 0 ? "text-red-400" : item.returnRate < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {item.returnRate > 0 ? "+" : ""}
                             {item.returnRate.toFixed(2)}%
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${cumulativeProfit > 0 ? "text-rose-500" : cumulativeProfit < 0 ? "text-indigo-500" : "text-slate-400"}`}>
+                          <TableCell className={`text-sm font-bold text-center ${cumulativeProfit > 0 ? "text-red-400" : cumulativeProfit < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {cumulativeProfit > 0 ? "+" : ""}
                             {cumulativeProfit.toLocaleString()}
                           </TableCell>
-                          <TableCell className="text-slate-300 font-bold text-sm text-center">
+                          <TableCell className="text-slate-200 font-bold text-sm text-center">
                             {Math.round(item.totalValuation).toLocaleString()}
                           </TableCell>
                         </motion.tr>

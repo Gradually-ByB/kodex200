@@ -18,7 +18,7 @@ export default function EtfSummaryCard({
 }: EtfSummaryCardProps) {
   if (isLoading || !data) {
     return (
-      <Card className="bg-slate-900 border-slate-800 animate-pulse">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md animate-pulse">
         <CardContent className="p-6 h-32" />
       </Card>
     );
@@ -34,7 +34,7 @@ export default function EtfSummaryCard({
       transition={{ duration: 0.5 }}
       className="h-full"
     >
-      <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 text-white overflow-hidden relative h-full flex flex-col justify-center">
+      <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-md text-slate-100 overflow-hidden relative h-full flex flex-col justify-center">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           {isPositive ? (
             <TrendingUp size={120} />
@@ -47,12 +47,12 @@ export default function EtfSummaryCard({
         <CardContent className="px-6 py-0 flex-1 flex flex-col justify-center">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase mb-4">
+              <p className="text-slate-300 text-xs font-bold uppercase mb-4">
                 {title}
               </p>
               <h2 className="text-4xl font-bold tracking-tight">
                 {data.price.toLocaleString()}
-                <span className="text-slate-500 text-lg ml-2 font-normal">
+                <span className="text-slate-400 text-lg ml-2 font-normal">
                   원
                 </span>
               </h2>
@@ -60,10 +60,10 @@ export default function EtfSummaryCard({
             <div
               className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold mt-1 ${
                 isPositive
-                  ? "bg-red-500/10 text-red-400"
+                  ? "bg-red-500/20 text-red-400"
                   : isNegative
-                    ? "bg-blue-500/10 text-blue-400"
-                    : "bg-slate-500/10 text-slate-400"
+                    ? "bg-blue-500/20 text-blue-400"
+                    : "bg-slate-500/20 text-slate-300"
               }`}
             >
               {isPositive ? (
@@ -80,7 +80,7 @@ export default function EtfSummaryCard({
             </div>
           </div>
 
-          <div className="mt-8 flex gap-6 text-[11px] text-slate-500 font-medium italic">
+          <div className="mt-8 flex gap-6 text-[11px] text-slate-400 font-medium italic">
             <div className="flex flex-col">
               <span className="text-green-400 font-semibold flex items-center gap-1.5 pt-1">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
