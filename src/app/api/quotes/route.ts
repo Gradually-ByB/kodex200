@@ -132,7 +132,7 @@ export async function GET(request: Request) {
         Number(naverData?.accumulatedTradingVolumeRaw) ||
         Math.floor(Math.random() * 500000);
 
-      if (isLiveMode) {
+      if (isLiveMode && marketOpen) {
         if (!simulatedOffsets[stock.종목코드])
           simulatedOffsets[stock.종목코드] = 0;
         if (!simulatedVolumes[stock.종목코드])
@@ -184,7 +184,7 @@ export async function GET(request: Request) {
     let etfChangeAmount = Number(etfData?.compareToPreviousClosePriceRaw) || 0;
     let etfChangeRate = Number(etfData?.fluctuationsRatioRaw) || 0;
 
-    if (isLiveMode) {
+    if (isLiveMode && marketOpen) {
       if (!simulatedOffsets["KODEX200"]) simulatedOffsets["KODEX200"] = 0;
       simulatedOffsets["KODEX200"] += (Math.random() - 0.5) * 10;
       const refPrice = Number(etfData?.closePriceRaw) || etfPrice;

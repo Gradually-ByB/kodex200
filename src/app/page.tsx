@@ -84,7 +84,8 @@ export default function Home() {
 
     // Use Korean local date string for consistent comparison
     const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStr = todayDate.toISOString().split("T")[0];
 
     // Update local history state for immediate UI feedback
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -92,7 +93,7 @@ export default function Home() {
       const newHistory = [...prev];
       const todayIndex = newHistory.findIndex((item) => {
         const itemDate = new Date(item.date);
-        const itemStr = `${itemDate.getFullYear()}-${String(itemDate.getMonth() + 1).padStart(2, "0")}-${String(itemDate.getDate()).padStart(2, "0")}`;
+        const itemStr = itemDate.toISOString().split("T")[0];
         return itemStr === todayStr;
       });
 
@@ -144,7 +145,8 @@ export default function Home() {
     if (!isLoaded || !data?.etf) return;
 
     const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayStr = todayDate.toISOString().split("T")[0];
     const totalValuation = data.etf.price * quantity;
     const dailyProfit = data.etf.changeAmount * quantity;
     const profitLoss = totalValuation - totalPrincipal;

@@ -1,10 +1,11 @@
+"use client";
+
 import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -21,8 +22,6 @@ import {
   Minus,
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -51,72 +50,95 @@ export default function PortfolioHistoryTable({
   const [currentPage, setCurrentPage] = useState(1);
 
   const formatDate = (dateValue: string | Date) => {
-    const d = new Date(dateValue);
+    // Handling date string vs object and avoiding local date shift
+    const dateStr = typeof dateValue === 'string' ? dateValue.split('T')[0] : dateValue.toISOString().split('T')[0];
+    const parts = dateStr.split('-');
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const w = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
     return `${m}월 ${day}일 (${w})`;
   };
 
-  if (isLoading) {
-    return (
-      <Card className="bg-slate-900 border-slate-800 animate-pulse">
-        <CardContent className="p-8 h-64" />
-      </Card>
-    );
-  }
-
-  // Filter out weekends and sort history by date descending
+  // Skip weekends to ensure consistent day-to-day profit calculation
   const history = useMemo(() => {
-    return [...initialHistory]
-      .filter((item) => {
-        const day = new Date(item.date).getDay();
-        return day !== 0 && day !== 6;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (!initialHistory) return [];
+    return initialHistory.filter(item => {
+      const d = new Date(item.date);
+      const day = d.getDay();
+      return day !== 0 && day !== 6; // Filter out Sun(0) and Sat(6)
+    });
   }, [initialHistory]);
 
   const totalPages = Math.max(1, Math.ceil(history.length / ITEMS_PER_PAGE));
-  const paginatedHistory = history.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
 
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.min(Math.max(1, page), totalPages));
-  };
+  const paginatedHistory = useMemo(() => {
+    return history.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE,
+    );
+  }, [history, currentPage]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
     >
-      <Card className="bg-slate-950 border-slate-900 overflow-hidden shadow-2xl">
-        <CardHeader className="border-b border-slate-900 bg-slate-900/50 py-4 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <History size={20} className="text-blue-400" />
-            일간 투자 히스토리
-          </CardTitle>
-          {history.length > 0 && (
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-900 px-2 py-1 rounded border border-slate-800">
-              Total {history.length} Days
+      <Card className="bg-slate-950 border-slate-900 shadow-2xl overflow-hidden backdrop-blur-sm bg-white/[0.02]">
+        <CardHeader className="border-b border-slate-900/50 bg-slate-950/50 py-4 flex flex-row items-center justify-between space-y-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-500/10 rounded-lg">
+              <History className="text-indigo-400" size={20} />
             </div>
-          )}
+            <div>
+              <CardTitle className="text-lg font-bold text-white tracking-tight">
+                일간 투자 히스토리
+              </CardTitle>
+              <p className="text-xs text-slate-500 font-medium">최초 투자 시점부터 현재까지의 기록입니다.</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500 mr-2 tabular-nums">
+              {currentPage} / {totalPages}
+            </span>
+            <div className="flex gap-1">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 bg-slate-900 border-slate-800 hover:bg-slate-800 hover:text-white text-slate-400 disabled:opacity-20"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1 || isLoading}
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 bg-slate-900 border-slate-800 hover:bg-slate-800 hover:text-white text-slate-400 disabled:opacity-20"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || history.length === 0 || isLoading}
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-900/30">
-                <TableRow className="border-slate-900 hover:bg-transparent">
-                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
+                <TableRow className="border-slate-900 border-b hover:bg-transparent">
+                  <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 w-[100px] text-center">
                     날짜
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     전일 종가
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
-                    현재가
+                    금일 종가
                   </TableHead>
                   <TableHead className="text-slate-500 font-bold uppercase tracking-wider text-[11px] py-4 text-center">
                     전일대비
@@ -138,31 +160,31 @@ export default function PortfolioHistoryTable({
 
               <TableBody>
                 <AnimatePresence mode="wait">
-                  {paginatedHistory.length === 0 ? (
+                  {isLoading && history.length === 0 ? (
                     <TableRow className="border-slate-900">
-                      <TableCell
-                        colSpan={8}
-                        className="h-32 text-center text-slate-500 text-sm italic"
-                      >
+                      <TableCell colSpan={8} className="h-48 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                          <p className="text-sm text-slate-500 font-medium">히스토리를 불러오는 중...</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : history.length === 0 ? (
+                    <TableRow className="border-slate-900">
+                      <TableCell colSpan={8} className="h-32 text-center text-slate-500 text-sm italic">
                         기록된 히스토리가 없습니다.
                       </TableCell>
                     </TableRow>
                   ) : (
                     paginatedHistory.map((item, idx) => {
-                      // 전체 history 배열에서 현재 아이템의 실제 인덱스를 찾음
                       const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
-                      // 전일 종가는 다음 인덱스(이전 날짜)의 currentPrice임
                       const prevClose = history[actualIdx + 1]?.currentPrice || 0;
-                      const diffPrice =
-                        prevClose > 0 ? item.currentPrice - prevClose : 0;
+                      const diffPrice = prevClose > 0 ? item.currentPrice - prevClose : 0;
 
-                      // 누적 수익금 계산 (원금 기반)
                       const cumulativeProfit = Math.round(
                         item.totalValuation -
-                          item.totalValuation / (1 + item.returnRate / 100),
+                        item.totalValuation / (1 + item.returnRate / 100),
                       );
-                      const isCPositive = cumulativeProfit > 0;
-                      const isCNegative = cumulativeProfit < 0;
 
                       return (
                         <motion.tr
@@ -177,70 +199,37 @@ export default function PortfolioHistoryTable({
                             {formatDate(item.date)}
                           </TableCell>
                           <TableCell className="text-slate-400 text-sm font-medium text-center">
-                            {prevClose > 0 ? prevClose.toLocaleString() : "-"}{prevClose > 0 && <span className="text-[10px] opacity-50 font-normal ml-1">원</span>}
+                            {prevClose > 0 ? prevClose.toLocaleString() : "-"}
+                            {prevClose > 0 && <span className="text-[10px] opacity-40 ml-1">원</span>}
                           </TableCell>
                           <TableCell className="text-slate-100 font-bold text-sm text-center">
-                            {item.currentPrice.toLocaleString()}<span className="text-[10px] opacity-50 font-normal ml-1">원</span>
+                            {item.currentPrice.toLocaleString()}
+                            <span className="text-[10px] opacity-40 ml-1">원</span>
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-red-400" : diffPrice < 0 ? "text-blue-400" : "text-slate-400"}`}>
+                          <TableCell className={`text-sm font-bold text-center ${diffPrice > 0 ? "text-rose-400" : diffPrice < 0 ? "text-indigo-400" : "text-slate-400"}`}>
                             {prevClose > 0 ? (
                               <div className="flex items-center justify-center gap-1">
-                                {diffPrice > 0 ? (
-                                  <TrendingUp size={12} />
-                                ) : diffPrice < 0 ? (
-                                  <TrendingDown size={12} />
-                                ) : (
-                                  <Minus size={12} />
-                                )}
+                                {diffPrice > 0 ? <TrendingUp size={12} /> : diffPrice < 0 ? <TrendingDown size={12} /> : <Minus size={12} />}
                                 <span>{diffPrice > 0 ? "+" : ""}{diffPrice.toLocaleString()}</span>
                               </div>
                             ) : (
                               <span className="opacity-30">-</span>
                             )}
                           </TableCell>
-                          <TableCell
-                            className={`py-4 text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}
-                          >
-                            <div className="flex items-center justify-center text-sm font-bold">
-                              {item.dailyProfit > 0 ? (
-                                <TrendingUp size={14} className="mr-1.5" />
-                              ) : item.dailyProfit < 0 ? (
-                                <TrendingDown size={14} className="mr-1.5" />
-                              ) : (
-                                <Minus size={14} className="mr-1.5" />
-                              )}
-                              <span>{item.dailyProfit > 0 ? "+" : ""}{item.dailyProfit.toLocaleString()}</span>
-                              <span className="text-[10px] font-normal opacity-60 ml-1">원</span>
-                            </div>
+                          <TableCell className={`text-sm font-bold text-center ${item.dailyProfit > 0 ? "text-rose-400" : item.dailyProfit < 0 ? "text-indigo-400" : "text-slate-400"}`}>
+                            {item.dailyProfit > 0 ? "+" : ""}
+                            {Math.round(item.dailyProfit).toLocaleString()}
                           </TableCell>
-                          <TableCell
-                            className={`py-4 text-sm font-bold text-center ${item.returnRate >= 0 ? "text-red-400" : "text-blue-400"}`}
-                          >
-                            {item.returnRate >= 0 ? "+" : ""}
-                            {item.returnRate.toFixed(2)} %
+                          <TableCell className={`text-sm font-bold text-center ${item.returnRate > 0 ? "text-rose-400" : item.returnRate < 0 ? "text-indigo-400" : "text-slate-400"}`}>
+                            {item.returnRate > 0 ? "+" : ""}
+                            {item.returnRate.toFixed(2)}%
                           </TableCell>
-                          <TableCell
-                            className={`py-4 text-center ${isCPositive ? "text-red-400" : isCNegative ? "text-blue-400" : "text-slate-400"}`}
-                          >
-                            <div className="flex items-center justify-center text-sm font-bold">
-                              {isCPositive ? (
-                                <TrendingUp size={14} className="mr-1.5" />
-                              ) : isCNegative ? (
-                                <TrendingDown size={14} className="mr-1.5" />
-                              ) : (
-                                <Minus size={14} className="mr-1.5" />
-                              )}
-                              <span>{cumulativeProfit.toLocaleString()}</span>
-                              <span className="text-[10px] font-normal opacity-60 ml-1">
-                                원
-                              </span>
-                            </div>
+                          <TableCell className={`text-sm font-bold text-center ${cumulativeProfit > 0 ? "text-rose-500" : cumulativeProfit < 0 ? "text-indigo-500" : "text-slate-400"}`}>
+                            {cumulativeProfit > 0 ? "+" : ""}
+                            {cumulativeProfit.toLocaleString()}
                           </TableCell>
-                          <TableCell className="text-slate-200 font-black tracking-tighter text-sm py-4 text-center">
-                            {item.totalValuation.toLocaleString()}{" "}
-                            <span className="text-[10px] text-slate-500 font-normal">
-                              원
-                            </span>
+                          <TableCell className="text-slate-300 font-bold text-sm text-center">
+                            {Math.round(item.totalValuation).toLocaleString()}
                           </TableCell>
                         </motion.tr>
                       );
@@ -251,52 +240,6 @@ export default function PortfolioHistoryTable({
             </Table>
           </div>
         </CardContent>
-        {totalPages > 1 && (
-          <CardFooter className="border-t border-slate-900 bg-slate-900/20 py-4 flex items-center justify-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(1)}
-              disabled={currentPage === 1}
-              className="h-8 w-8 text-slate-500 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-20"
-            >
-              <ChevronsLeft size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="h-8 w-8 text-slate-500 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-20"
-            >
-              <ChevronLeft size={16} />
-            </Button>
-
-            <div className="flex items-center gap-1 px-4 text-slate-400 text-xs font-bold">
-              Page <span className="text-blue-400 mx-1">{currentPage}</span> of{" "}
-              {totalPages}
-            </div>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="h-8 w-8 text-slate-500 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-20"
-            >
-              <ChevronRight size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => goToPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="h-8 w-8 text-slate-500 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-20"
-            >
-              <ChevronsRight size={16} />
-            </Button>
-          </CardFooter>
-        )}
       </Card>
     </motion.div>
   );
