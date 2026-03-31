@@ -63,8 +63,10 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
 
     // Use Korean local date string for consistent comparison
     const now = new Date();
-    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayStr = todayDate.toISOString().split("T")[0];
+    const kstOffset = 9 * 60; // KST is UTC+9
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const kst = new Date(utc + kstOffset * 60000);
+    const todayStr = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
 
     // Update local history state for immediate UI feedback
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -72,6 +74,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
       const newHistory = [...prev];
       const todayIndex = newHistory.findIndex((item) => {
         const itemDate = new Date(item.date);
+        // Correctly handle both ISO strings and local date strings
         const itemStr = itemDate.toISOString().split("T")[0];
         return itemStr === todayStr;
       });
@@ -123,9 +126,13 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
   useEffect(() => {
     if (!isLoaded || !data?.etf) return;
 
-    const today = new Date();
-    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const todayStr = todayDate.toISOString().split("T")[0];
+    // Use KST-based date for history consistency
+    const now = new Date();
+    const kstOffset = 9 * 60; // KST is UTC+9
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const kst = new Date(utc + kstOffset * 60000);
+    const todayStr = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+
     const totalValuation = data.etf.price * quantity;
     const dailyProfit = data.etf.changeAmount * quantity;
     const profitLoss = totalValuation - totalPrincipal;
