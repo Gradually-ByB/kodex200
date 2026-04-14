@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { getKstDateString } from "@/lib/utils";
 
 interface HistoryItem {
   id: string;
@@ -50,14 +51,23 @@ export default function PortfolioHistoryTable({
   const [currentPage, setCurrentPage] = useState(1);
 
   const formatDate = (dateValue: string | Date) => {
-    // Handling date string vs object and avoiding local date shift
-    const dateStr = typeof dateValue === 'string' ? dateValue.split('T')[0] : dateValue.toISOString().split('T')[0];
-    const parts = dateStr.split('-');
-    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const w = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+    // Handling date string vs object and ensuring KST consistency
+    const date = new Date(dateValue);
+    
+    // Add 9 hours to UTC for KST if it's an ISO string that might shift
+    // Or just use Intl.DateTimeFormat which is more robust
+    const formatter = new Intl.DateTimeFormat("ko-KR", {
+      month: "2-digit",
+      day: "2-digit",
+      weekday: "short",
+      timeZone: "Asia/Seoul",
+    });
+    
+    const parts = formatter.formatToParts(date);
+    const m = parts.find(p => p.type === 'month')?.value;
+    const day = parts.find(p => p.type === 'day')?.value;
+    const w = parts.find(p => p.type === 'weekday')?.value;
+    
     return `${m}월 ${day}일 (${w})`;
   };
 
@@ -66,8 +76,9 @@ export default function PortfolioHistoryTable({
     if (!initialHistory) return [];
     return initialHistory.filter(item => {
       const d = new Date(item.date);
-      const day = d.getDay();
-      return day !== 0 && day !== 6; // Filter out Sun(0) and Sat(6)
+      // Get day of week in KST
+      const day = d.toLocaleDateString('en-US', { timeZone: 'Asia/Seoul', weekday: 'short' });
+      return day !== 'Sat' && day !== 'Sun';
     });
   }, [initialHistory]);
 
@@ -159,8 +170,7 @@ export default function PortfolioHistoryTable({
               </TableHeader>
 
               <TableBody>
-                <AnimatePresence mode="wait">
-                  {isLoading && history.length === 0 ? (
+                {isLoading && history.length === 0 ? (
                     <TableRow className="border-slate-900">
                       <TableCell colSpan={8} className="h-48 text-center">
                         <div className="flex flex-col items-center justify-center gap-3">
@@ -235,7 +245,6 @@ export default function PortfolioHistoryTable({
                       );
                     })
                   )}
-                </AnimatePresence>
               </TableBody>
             </Table>
           </div>

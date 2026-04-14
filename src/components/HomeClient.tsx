@@ -12,6 +12,7 @@ import TotalPortfolioCard from "@/components/TotalPortfolioCard";
 import DailyProfitCard from "@/components/DailyProfitCard";
 import PortfolioInput from "@/components/PortfolioInput";
 import PortfolioHistoryTable from "@/components/PortfolioHistoryTable";
+import { getKstDateString } from "@/lib/utils";
 
 interface HomeClientProps {
   initialPortfolio: any;
@@ -62,11 +63,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
       totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
 
     // Use Korean local date string for consistent comparison
-    const now = new Date();
-    const kstOffset = 9 * 60; // KST is UTC+9
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const kst = new Date(utc + kstOffset * 60000);
-    const todayStr = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+    const todayStr = getKstDateString();
 
     // Update local history state for immediate UI feedback
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -74,8 +71,8 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
       const newHistory = [...prev];
       const todayIndex = newHistory.findIndex((item) => {
         const itemDate = new Date(item.date);
-        // Correctly handle both ISO strings and local date strings
-        const itemStr = itemDate.toISOString().split("T")[0];
+        // Correctly handle both ISO strings and local date strings using KST
+        const itemStr = getKstDateString(itemDate);
         return itemStr === todayStr;
       });
 
@@ -127,11 +124,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     if (!isLoaded || !data?.etf) return;
 
     // Use KST-based date for history consistency
-    const now = new Date();
-    const kstOffset = 9 * 60; // KST is UTC+9
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const kst = new Date(utc + kstOffset * 60000);
-    const todayStr = `${kst.getFullYear()}-${String(kst.getMonth() + 1).padStart(2, "0")}-${String(kst.getDate()).padStart(2, "0")}`;
+    const todayStr = getKstDateString();
 
     const totalValuation = data.etf.price * quantity;
     const dailyProfit = data.etf.changeAmount * quantity;
