@@ -12,7 +12,7 @@ import TotalPortfolioCard from "@/components/TotalPortfolioCard";
 import DailyProfitCard from "@/components/DailyProfitCard";
 import PortfolioInput from "@/components/PortfolioInput";
 import PortfolioHistoryTable from "@/components/PortfolioHistoryTable";
-import { getKstDateString } from "@/lib/utils";
+import { getKstDateString, getLatestMarketDateString } from "@/lib/utils";
 
 interface HomeClientProps {
   initialPortfolio: any;
@@ -52,59 +52,6 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     updateTime();
   }, []);
 
-  // Synchronize history with current inputs and market data
-  useEffect(() => {
-    if (!isLoaded || !data?.etf) return;
-
-    const totalValuation = data.etf.price * quantity;
-    const dailyProfit = data.etf.changeAmount * quantity;
-    const profitLoss = totalValuation - totalPrincipal;
-    const returnRate =
-      totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
-
-    // Use Korean local date string for consistent comparison
-    const todayStr = getKstDateString();
-
-    // Update local history state for immediate UI feedback
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHistory((prev) => {
-      const newHistory = [...prev];
-      const todayIndex = newHistory.findIndex((item) => {
-        const itemDate = new Date(item.date);
-        // Correctly handle both ISO strings and local date strings using KST
-        const itemStr = getKstDateString(itemDate);
-        return itemStr === todayStr;
-      });
-
-      const updatedItem = {
-        id: todayIndex >= 0 ? newHistory[todayIndex].id : "temp-id",
-        date: todayStr,
-        avgPrice: avgPrice,
-        currentPrice: data.etf.price,
-        dailyProfit: dailyProfit,
-        returnRate: returnRate,
-        totalValuation: totalValuation,
-      };
-
-      if (todayIndex >= 0) {
-        // Only update if something actually changed to avoid unnecessary re-renders
-        const existing = newHistory[todayIndex];
-        const hasChanged =
-          existing.avgPrice !== updatedItem.avgPrice ||
-          existing.currentPrice !== updatedItem.currentPrice ||
-          existing.dailyProfit !== updatedItem.dailyProfit ||
-          existing.returnRate !== updatedItem.returnRate ||
-          existing.totalValuation !== updatedItem.totalValuation;
-
-        if (!hasChanged) return prev;
-        newHistory[todayIndex] = updatedItem;
-      } else {
-        newHistory.unshift(updatedItem);
-      }
-      return newHistory;
-    });
-  }, [data?.etf, quantity, avgPrice, totalPrincipal, isLoaded]);
-
   // Save portfolio AND today's history to DB (Debounced)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveToDb = useCallback((payload: any) => {
@@ -120,18 +67,57 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     }, 1500);
   }, []);
 
+  // Synchronize history with current inputs and market data
   useEffect(() => {
     if (!isLoaded || !data?.etf) return;
 
-    // Use KST-based date for history consistency
-    const todayStr = getKstDateString();
-
-    const totalValuation = data.etf.price * quantity;
-    const dailyProfit = data.etf.changeAmount * quantity;
+    const currentPrice = data.etf.price;
+    const changeAmount = data.etf.changeAmount;
+    const totalValuation = currentPrice * quantity;
+    const dailyProfit = changeAmount * quantity;
     const profitLoss = totalValuation - totalPrincipal;
-    const returnRate =
-      totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
+    const returnRate = totalPrincipal > 0 ? (profitLoss / totalPrincipal) * 100 : 0;
 
+    // Use the latest market day string for consistent history tagging
+    const todayStr = getLatestMarketDateString();
+
+    // 1. Update local history state for immediate UI feedback
+    setHistory((prev) => {
+      const newHistory = [...prev];
+      const todayIndex = newHistory.findIndex((item) => {
+        const itemDate = new Date(item.date);
+        const itemStr = getKstDateString(itemDate);
+        return itemStr === todayStr;
+      });
+
+      const updatedItem = {
+        id: todayIndex >= 0 ? newHistory[todayIndex].id : "temp-id",
+        date: todayStr,
+        avgPrice,
+        currentPrice,
+        dailyProfit,
+        returnRate,
+        totalValuation,
+      };
+
+      if (todayIndex >= 0) {
+        const existing = newHistory[todayIndex];
+        const hasChanged =
+          existing.avgPrice !== updatedItem.avgPrice ||
+          existing.currentPrice !== updatedItem.currentPrice ||
+          existing.dailyProfit !== updatedItem.dailyProfit ||
+          existing.returnRate !== updatedItem.returnRate ||
+          existing.totalValuation !== updatedItem.totalValuation;
+
+        if (!hasChanged) return prev;
+        newHistory[todayIndex] = updatedItem;
+      } else {
+        newHistory.unshift(updatedItem);
+      }
+      return newHistory;
+    });
+
+    // 2. Save portfolio AND today's history to DB (Debounced via saveToDb)
     saveToDb({
       quantity,
       avgPrice,
@@ -139,13 +125,13 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
       historyItem: {
         date: todayStr,
         avgPrice,
-        currentPrice: data.etf.price,
+        currentPrice,
         dailyProfit,
         returnRate,
         totalValuation,
       },
     });
-  }, [quantity, avgPrice, totalPrincipal, data?.etf, saveToDb, isLoaded]);
+  }, [data?.etf, quantity, avgPrice, totalPrincipal, isLoaded, saveToDb]);
 
   const isMarketOpen = data?.marketStatus === "OPEN";
 

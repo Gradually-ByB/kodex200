@@ -190,6 +190,9 @@ export default function PortfolioHistoryTable({
                       const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
                       const prevClose = history[actualIdx + 1]?.currentPrice || 0;
                       const diffPrice = prevClose > 0 ? item.currentPrice - prevClose : 0;
+                      
+                      const itemQuantity = item.currentPrice > 0 ? item.totalValuation / item.currentPrice : 0;
+                      const displayDailyProfit = prevClose > 0 ? diffPrice * itemQuantity : item.dailyProfit;
 
                       const cumulativeProfit = Math.round(
                         item.totalValuation -
@@ -226,9 +229,9 @@ export default function PortfolioHistoryTable({
                               <span className="opacity-30">-</span>
                             )}
                           </TableCell>
-                          <TableCell className={`text-sm font-bold text-center ${item.dailyProfit > 0 ? "text-red-400" : item.dailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}>
-                            {item.dailyProfit > 0 ? "+" : ""}
-                            {Math.round(item.dailyProfit).toLocaleString()}
+                          <TableCell className={`text-sm font-bold text-center ${displayDailyProfit > 0 ? "text-red-400" : displayDailyProfit < 0 ? "text-blue-400" : "text-slate-400"}`}>
+                            {displayDailyProfit > 0 ? "+" : ""}
+                            {Math.round(displayDailyProfit).toLocaleString()}
                           </TableCell>
                           <TableCell className={`text-sm font-bold text-center ${item.returnRate > 0 ? "text-red-400" : item.returnRate < 0 ? "text-blue-400" : "text-slate-400"}`}>
                             {item.returnRate > 0 ? "+" : ""}
