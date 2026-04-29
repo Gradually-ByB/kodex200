@@ -67,12 +67,26 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     }, 1500);
   }, []);
 
+  // Ensure exact day-over-day price match by ignoring Naver's dividend-adjusted "previous close"
+  const actualChangeAmount = useMemo(() => {
+    if (!data?.etf) return 0;
+    const todayStr = getLatestMarketDateString();
+    const prevRecord = initialHistory?.find((item) => {
+      return getKstDateString(new Date(item.date)) !== todayStr;
+    });
+    
+    if (prevRecord) {
+      return data.etf.price - prevRecord.currentPrice;
+    }
+    return data.etf.changeAmount;
+  }, [data?.etf, initialHistory]);
+
   // Synchronize history with current inputs and market data
   useEffect(() => {
     if (!isLoaded || !data?.etf) return;
 
     const currentPrice = data.etf.price;
-    const changeAmount = data.etf.changeAmount;
+    const changeAmount = actualChangeAmount;
     const totalValuation = currentPrice * quantity;
     const dailyProfit = changeAmount * quantity;
     const profitLoss = totalValuation - totalPrincipal;
@@ -81,17 +95,16 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     // Use the latest market day string for consistent history tagging
     const todayStr = getLatestMarketDateString();
 
-    // 1. Update local history state for immediate UI feedback
+    // 1. Update local history state for immediate UI feedback outside the render cascade
     setHistory((prev) => {
-      const newHistory = [...prev];
-      const todayIndex = newHistory.findIndex((item) => {
+      const todayIndex = prev.findIndex((item) => {
         const itemDate = new Date(item.date);
         const itemStr = getKstDateString(itemDate);
         return itemStr === todayStr;
       });
 
       const updatedItem = {
-        id: todayIndex >= 0 ? newHistory[todayIndex].id : "temp-id",
+        id: todayIndex >= 0 ? prev[todayIndex].id : "temp-id",
         date: todayStr,
         avgPrice,
         currentPrice,
@@ -101,7 +114,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
       };
 
       if (todayIndex >= 0) {
-        const existing = newHistory[todayIndex];
+        const existing = prev[todayIndex];
         const hasChanged =
           existing.avgPrice !== updatedItem.avgPrice ||
           existing.currentPrice !== updatedItem.currentPrice ||
@@ -110,11 +123,12 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
           existing.totalValuation !== updatedItem.totalValuation;
 
         if (!hasChanged) return prev;
+        const newHistory = [...prev];
         newHistory[todayIndex] = updatedItem;
+        return newHistory;
       } else {
-        newHistory.unshift(updatedItem);
+        return [updatedItem, ...prev];
       }
-      return newHistory;
     });
 
     // 2. Save portfolio AND today's history to DB (Debounced via saveToDb)
@@ -131,7 +145,9 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
         totalValuation,
       },
     });
-  }, [data?.etf, quantity, avgPrice, totalPrincipal, isLoaded, saveToDb]);
+    // We intentionally omit `isLoaded` from deps because we only care about real data changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.etf, quantity, avgPrice, totalPrincipal, saveToDb, actualChangeAmount]);
 
   const isMarketOpen = data?.marketStatus === "OPEN";
 
@@ -182,7 +198,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
               title="KODEX 200"
             />
             <DailyProfitCard
-              changeAmount={data?.etf?.changeAmount}
+              changeAmount={actualChangeAmount}
               quantity={quantity}
               isLoading={isLoading}
             />
