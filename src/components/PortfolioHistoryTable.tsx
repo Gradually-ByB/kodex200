@@ -187,12 +187,13 @@ export default function PortfolioHistoryTable({
                     </TableRow>
                   ) : (
                     paginatedHistory.map((item, idx) => {
-                      const actualIdx = (currentPage - 1) * ITEMS_PER_PAGE + idx;
-                      const prevClose = history[actualIdx + 1]?.currentPrice || 0;
-                      const diffPrice = prevClose > 0 ? item.currentPrice - prevClose : 0;
-                      
                       const itemQuantity = item.currentPrice > 0 ? item.totalValuation / item.currentPrice : 0;
-                      const displayDailyProfit = prevClose > 0 ? diffPrice * itemQuantity : item.dailyProfit;
+                      // Back-calculate the exact per-share difference from the recorded daily profit
+                      // This ensures diffPrice perfectly matches Naver's actual change amount, regardless of missing days
+                      const diffPrice = itemQuantity > 0 ? Math.round(item.dailyProfit / itemQuantity) : 0;
+                      // Derive the true previous close that produced this profit
+                      const prevClose = item.currentPrice - diffPrice;
+                      const displayDailyProfit = item.dailyProfit;
 
                       const cumulativeProfit = Math.round(
                         item.totalValuation -
