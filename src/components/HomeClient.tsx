@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
 import { ApiResponse } from "@/types/stock";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import MarketIndices from "@/components/MarketIndices";
 import EtfSummaryCard from "@/components/EtfSummaryCard";
