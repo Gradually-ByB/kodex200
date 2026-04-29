@@ -68,18 +68,10 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
   }, []);
 
   // Ensure exact day-over-day price match by ignoring Naver's dividend-adjusted "previous close"
+  // Use Naver's exact changeAmount to ensure daily profit matches official displays (e.g. including dividend adjustments)
   const actualChangeAmount = useMemo(() => {
-    if (!data?.etf) return 0;
-    const todayStr = getLatestMarketDateString();
-    const prevRecord = initialHistory?.find((item) => {
-      return getKstDateString(new Date(item.date)) !== todayStr;
-    });
-    
-    if (prevRecord) {
-      return data.etf.price - prevRecord.currentPrice;
-    }
-    return data.etf.changeAmount;
-  }, [data?.etf, initialHistory]);
+    return data?.etf?.changeAmount || 0;
+  }, [data?.etf]);
 
   // Synchronize history with current inputs and market data
   useEffect(() => {
@@ -96,6 +88,7 @@ export default function HomeClient({ initialPortfolio, initialHistory }: HomeCli
     const todayStr = getLatestMarketDateString();
 
     // 1. Update local history state for immediate UI feedback outside the render cascade
+
     setHistory((prev) => {
       const todayIndex = prev.findIndex((item) => {
         const itemDate = new Date(item.date);

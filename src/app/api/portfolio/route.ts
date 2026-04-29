@@ -12,17 +12,48 @@ async function syncHistoricalData() {
 
     // Fetch historical data directly from Naver for stability
     const symbol = "069500"; // KODEX 200
+    // 1. Fetch Chart Data (for 100 days of closing prices)
     const chartRes = await axios.get(
       `https://api.stock.naver.com/chart/domestic/item/${symbol}?periodType=month&count=100`,
       {
         headers: {
           Referer: "https://fin.naver.com/",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "User-Agent": "Mozilla/5.0",
+        },
+      }
+    );
+    
+    // 2. Fetch official daily change amounts (which account for dividends/splits)
+    // The 'price' API returns a direct array of historical daily prices and changes
+    const priceRes = await axios.get(
+      `https://m.stock.naver.com/api/stock/${symbol}/price?pageSize=20`,
+      {
+        headers: {
+          Referer: "https://m.stock.naver.com/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
       }
     );
     
     const priceInfos = chartRes.data.priceInfos || [];
+    
+    // Create a map for quick lookup of official change amounts
+    const officialChanges = new Map<string, number>();
+    const priceData = Array.isArray(priceRes.data) ? priceRes.data : [];
+    
+    priceData.forEach((day: any) => {
+      // localTradedAt is already in YYYY-MM-DD format
+      const dateStr = day.localTradedAt;
+      const change = parseInt(day.compareToPreviousClosePrice.replace(/,/g, ""), 10);
+      
+      // Handle the sign (rising vs falling)
+      const isRising = day.compareToPreviousPrice?.name === "RISING";
+      const isFalling = day.compareToPreviousPrice?.name === "FALLING";
+      const signedChange = isFalling ? -Math.abs(change) : change;
+      
+      officialChanges.set(dateStr, signedChange);
+    });
+
     const historyData = priceInfos.map((item: any) => {
       const rawDate = item.localDate || item.localDateTime?.substring(0, 8);
       const formattedDate = `${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}`;
@@ -58,11 +89,20 @@ async function syncHistoricalData() {
 
       const needsUpdate = !existingDates.has(dateStr);
       const existingEntry = existingHistory.find(h => h.date.toISOString().split("T")[0] === dateStr);
-      const suspicious = existingEntry && existingEntry.currentPrice !== currentPrice;
+      
+      // We prioritize the official change amount from the integration API if available
+      const officialChange = officialChanges.get(dateStr);
+      console.log(`[Sync] Date: ${dateStr}, Current: ${currentPrice}, Prev: ${prevPrice}, OfficialChange: ${officialChange}`);
+      const effectiveChange = officialChange !== undefined ? officialChange : (currentPrice - prevPrice);
+      const calculatedProfit = effectiveChange * portfolio.quantity;
+
+      const suspicious = existingEntry && (
+        existingEntry.currentPrice !== currentPrice || 
+        Math.abs(existingEntry.dailyProfit - calculatedProfit) > 1
+      );
 
       if (needsUpdate || suspicious) {
         const totalValuation = currentPrice * portfolio.quantity;
-        const dailyProfit = (currentPrice - prevPrice) * portfolio.quantity;
         const totalPrincipal = portfolio.totalPrincipal;
         const returnRate = totalPrincipal > 0 ? ((totalValuation - totalPrincipal) / totalPrincipal) * 100 : 0;
 
@@ -72,7 +112,7 @@ async function syncHistoricalData() {
             update: {
               avgPrice: portfolio.avgPrice,
               currentPrice,
-              dailyProfit,
+              dailyProfit: calculatedProfit,
               returnRate,
               totalValuation,
             },
@@ -80,7 +120,7 @@ async function syncHistoricalData() {
               date: new Date(dateStr),
               avgPrice: portfolio.avgPrice,
               currentPrice,
-              dailyProfit,
+              dailyProfit: calculatedProfit,
               returnRate,
               totalValuation,
             },
